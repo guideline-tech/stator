@@ -1,6 +1,14 @@
 module Stator
   module Model
 
+    def self.extended(base)
+      base.class_eval do
+        class << self
+          alias_method :state_machine, :stator
+        end
+      end
+    end
+
     def stator(initial_state, options = {}, &block)
       include InstanceMethods
 
@@ -17,7 +25,7 @@ module Stator
     module InstanceMethods
 
       def self.included(base)
-        base.instance_eval do
+        base.class_eval do
           cattr_accessor    :_stator
           after_initialize  :_stator_set_default_state
           validate          :_stator_validate_transition

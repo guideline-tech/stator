@@ -6,5 +6,5 @@ gem 'activerecord', '4.0.0'
 gemspec :path => '../'
 
 gem 'rake'
-gem 'activerecord-nulldb-adapter', :require => false, :git => 'git@github.com:nulldb/nulldb.git', :ref => 'ffc7dae4697c6b9fb15bed9edca3acb1f00eb5f0'
+gem 'activerecord-nulldb-adapter', :require => false, :github => 'nulldb/nulldb', :ref => 'ffc7dae4697c6b9fb15bed9edca3acb1f00eb5f0'
 gem 'rspec'

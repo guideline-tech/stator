@@ -41,6 +41,7 @@ module Stator
       @transitions << t
       t
     end
+    alias_method :event, :transition
 
     def conditional(*states, &block)
       condition = "#{states.map(&:to_s).inspect}.include?(self._stator_state)"
@@ -49,6 +50,7 @@ module Stator
         klass.instance_exec(o, &block)
       end
     end
+    alias_method :state, :conditional
 
     def matching_transition(from, to)
       @transitions.detect do |transition|
