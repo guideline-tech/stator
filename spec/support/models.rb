@@ -37,7 +37,7 @@ class User < ActiveRecord::Base
     end
   end
 
-  validates :email, length: {is: 'four@example.com'.length}
+  validate :email_is_right_length
 
   protected
 
@@ -53,6 +53,15 @@ class User < ActiveRecord::Base
   def check_email_validity
     unless self.email.to_s =~ /example\.com$/
       self.errors.add(:email, 'format needs to be example.com')
+      return false
+    end
+
+    true
+  end
+
+  def email_is_right_length
+    unless self.email.to_s.length == 'four@example.com'.length
+      self.errors.add(:email, 'needs to be the right length')
       return false
     end
 

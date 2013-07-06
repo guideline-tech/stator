@@ -7,6 +7,7 @@
 
 require 'active_record'
 require 'nulldb/core'
+require 'active_support/core_ext'
 require 'stator'
 
 RSpec.configure do |config|
