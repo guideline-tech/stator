@@ -78,12 +78,39 @@ end
 class Animal < ActiveRecord::Base
   extend Stator::Model
 
-  stator :unborn, :field => :status do
+  stator :unborn, :field => :status, :helpers => true do
 
     transition :birth do
       from :unborn
       to :born
     end
 
+  end
+end
+
+class Zoo < ActiveRecord::Base
+  extend Stator::Model
+
+  stator :closed do
+
+    transition :open do
+      from :closed
+      to :opened
+    end
+
+    transition :close do
+      from  :opened
+      to    :closed
+    end
+
+    conditional :opened do |c|
+      c.validate :validate_lights_are_on
+    end
+  end
+
+  protected
+
+  def validate_lights_are_on
+    true
   end
 end

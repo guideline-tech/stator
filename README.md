@@ -59,7 +59,7 @@ The intention of stator was to avoid hijacking ActiveRecord or reinvent the whee
 class User < ActiveRecord::Base
   extend Stator::Model
 
-  stator :unactivated, field: :status do
+  stator :unactivated, field: :status, helpers: true do
 
     transition :activate do
       from :unactivated
@@ -82,9 +82,26 @@ class User < ActiveRecord::Base
   end
 end
 ```
+The `helpers: true` option was passed to the previous state machine. This enables some convenience methods:
+
+```ruby
+u = User.new
+u.activated?
+# => false
+u.can_activate?
+# => true
+```
+
+Note that asking if a transition can take place via `can_[transition_name]?` does not invoke validations. It simply determines whether the record is in a state which the transition can take place from.
+
 
 If you need to access the state machine directly, you can do so via the class:
 
 ```ruby
 User._stator
 ```
+
+#### TODO
+
+* Allow for multiple variations of a transition (shift_down style - :third_gear => :second_gear, :second_gear => :third_gear)
+* 

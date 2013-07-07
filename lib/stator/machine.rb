@@ -3,13 +3,21 @@ module Stator
 
     attr_reader :initial_state
     attr_reader :field
+    attr_reader :transition_names
+    attr_reader :states
 
 
     def initialize(class_name, initial_state, options = {})
       @class_name    = class_name
       @initial_state = initial_state
       @field         = options[:field] || :state
-      @transitions   = []
+
+      @transitions      = []
+
+      # pushed out into their own variables for performance reasons (AR integration can use method missing - see the HelperMethods module)
+      @transition_names = []
+      @states           = []
+
       @options       = options
 
       # set up the nil-to-initial transition so validations can all work the same
@@ -20,8 +28,8 @@ module Stator
 
     end
 
-    def states
-      @transitions.map(&:to_state) - [::Stator::Transition::ANY]
+    def get_transition(name)
+      @transitions.detect{|t| t.name.to_s == name.to_s}
     end
 
     def transition(name, &block)
@@ -38,10 +46,12 @@ module Stator
         raise "[Stator] another transition already exists with the name of #{t.name.inspect} in the #{@class_name} class"
       end
 
-      @transitions << t
+      @transitions      << t
+      @transition_names << t.name       unless t.name.nil?
+      @states           << t.to_state   unless t.to_state.nil?
+
       t
     end
-    alias_method :event, :transition
 
     def conditional(*states, &block)
       condition = "#{states.map(&:to_s).inspect}.include?(self._stator_state)"
@@ -50,7 +60,6 @@ module Stator
         klass.instance_exec(o, &block)
       end
     end
-    alias_method :state, :conditional
 
     def matching_transition(from, to)
       @transitions.detect do |transition|

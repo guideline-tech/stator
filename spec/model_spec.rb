@@ -74,4 +74,28 @@ describe Stator::Model do
     a.birth!
   end
 
+  describe 'helper methods' do
+
+    it 'should answer the question of whether the state is currently the one invoked' do
+      a = Animal.new
+      a.should be_unborn
+      a.should_not be_born
+
+      a.birth
+
+      a.should be_born
+      a.should_not be_unborn
+    end
+
+    it 'should determine if it can validly execute a transition' do
+      a = Animal.new
+      a.can_birth?.should be_true
+
+      a.birth
+
+      a.can_birth?.should be_false
+    end
+
+  end
+
 end

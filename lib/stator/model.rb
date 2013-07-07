@@ -1,16 +1,9 @@
 module Stator
   module Model
 
-    def self.extended(base)
-      base.class_eval do
-        class << self
-          alias_method :state_machine, :stator
-        end
-      end
-    end
-
     def stator(initial_state, options = {}, &block)
       include InstanceMethods
+      include HelperMethods if options[:helpers] == true
 
       self._stator = ::Stator::Machine.new(self.name, initial_state, options)
       
@@ -20,6 +13,37 @@ module Stator
       end
 
       self._stator
+    end
+
+    module HelperMethods
+
+      def self.included(base)
+        base.class_eval do
+          alias_method_chain :method_missing, :stator
+          alias_method_chain :respond_to?, :stator
+        end
+      end
+
+      def respond_to_with_stator?(method_name, include_private = false)
+        respond_to_without_stator?(method_name, include_private) || method_name.to_s =~ /(can)?(#{self._stator.states.join('|')})\?/
+      end
+
+      def method_missing_with_stator(method_name, *args, &block)
+
+        states = self._stator.states.join('|')
+        trans  = self._stator.transition_names.join('|')
+
+        case method_name.to_s
+        when /(#{states})\?/
+          self._stator_state == $1
+        when /can_(#{trans})\?/
+          trans = self._stator.get_transition($1)
+          trans.can?(self._stator_state)
+        else
+          method_missing_without_stator(method_name, *args, &block)
+        end
+
+      end
     end
 
     module InstanceMethods
