@@ -3,7 +3,7 @@
 Stator is a minimalist's state machine. It's a simple dsl that uses existing ActiveRecord functionality to accomplish common state machine funcitonality. This is not a full-featured computer-science driven gem, it's a gem that covers the 98% of use cases.
 
 ```ruby
-gem 'stator', git: 'git@github.com:mnelson/stator.git', tag: '0.0.1'
+gem 'stator', github: 'mnelson/stator', tag: 'v0.0.1'
 ```
 
 ## Usage
