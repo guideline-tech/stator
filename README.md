@@ -103,5 +103,5 @@ User._stator
 
 #### TODO
 
-* Allow for multiple variations of a transition (shift_down style - :third_gear => :second_gear, :second_gear => :third_gear)
-* 
+* Allow for multiple variations of a transition (shift_down style - :third_gear => :second_gear, :second_gear => :first_gear)
+* Create adapters for different backends (not just ActiveRecord)
