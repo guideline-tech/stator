@@ -28,11 +28,19 @@ describe Stator::Model do
     u.state = 'anythingelse'
 
     u.should_not be_valid
-    u.errors[:state].should_not be_empty
+    u.errors[:state].should eql(['is not a valid state'])
+  end
+
+  it 'should allow creation at any state' do
+    u = User.new(:email => 'doug@example.com')
+    u.state = 'hyperactivated'
+
+    u.should be_valid
   end
 
   it 'should ensure a valid state transition when given an illegal state based on the current state' do
     u = User.new
+    u.stub(:new_record?).and_return(false)
     u.state = 'hyperactivated'
 
     u.should_not be_valid

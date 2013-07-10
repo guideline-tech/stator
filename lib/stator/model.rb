@@ -71,10 +71,15 @@ module Stator
         was = self._stator_state_was
         is  = self._stator_state
 
-        unless _stator.matching_transition(was, is)
-          self.errors.add(self._stator.field, "cannot transition to #{is.inspect} from #{was.inspect}")
+        if self.new_record?
+          unless _stator.matching_transition(::Stator::Transition::ANY, is)
+            self.errors.add(self._stator.field, "is not a valid state")
+          end
+        else
+          unless _stator.matching_transition(was, is)
+            self.errors.add(self._stator.field, "cannot transition to #{is.inspect} from #{was.inspect}")
+          end
         end
-
       end
 
       def _stator_state

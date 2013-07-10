@@ -30,12 +30,12 @@ module Stator
     end
 
     def can?(current_state)
-      @froms.include?(current_state) || @froms.include?(ANY)
+      @froms.include?(current_state) || @froms.include?(ANY) || current_state == ANY
     end
 
     def valid?(from, to)
       can?(from) && 
-      (@to == to || @to == ANY)
+      (@to == to || @to == ANY || to == ANY)
     end
 
     def conditional(&block)
