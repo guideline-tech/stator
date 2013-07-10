@@ -33,18 +33,11 @@ module Stator
     end
 
     def transition(name, &block)
+      
       t = ::Stator::Transition.new(@class_name, name)
       t.instance_eval(&block) if block_given?
 
-      t.from_states.each do |from|
-        if other = matching_transition(from, t.to_state)
-          raise "[Stator] another transition already exists which moves #{@class_name} from #{from.inspect} to #{t.to_state.inspect}"
-        end
-      end
-
-      if other = @transitions.detect{|other| t.name == other.name }
-        raise "[Stator] another transition already exists with the name of #{t.name.inspect} in the #{@class_name} class"
-      end
+      verify_transition_validity(t)
 
       @transitions      << t
       @transition_names << t.name       unless t.name.nil?
@@ -72,6 +65,26 @@ module Stator
     def klass
       @class_name.constantize
     end
+
+    def verify_transition_validity(transition)
+      verify_state_singularity_of_transition(transition)
+      verify_name_singularity_of_transition(transition)
+    end
+
+    def verify_state_singularity_of_transition(transition)
+      transition.from_states.each do |from|
+        if other = matching_transition(from, transition.to_state)
+          raise "[Stator] another transition already exists which moves #{@class_name} from #{from.inspect} to #{transition.to_state.inspect}"
+        end
+      end
+    end
+
+    def verify_name_singularity_of_transition(transition)
+      if other = @transitions.detect{|other| transition.name == other.name }
+        raise "[Stator] another transition already exists with the name of #{transition.name.inspect} in the #{@class_name} class"
+      end
+    end
+
 
   end
 end
