@@ -39,9 +39,7 @@ module Stator
     end
 
     def conditional(&block)
-      klass.with_options :if => conditional_string do |o|
-        klass.instance_exec(o, &block)
-      end
+      klass.instance_exec(conditional_string, &block)
     end
 
     def any

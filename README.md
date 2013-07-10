@@ -53,7 +53,7 @@ u.persisted?
 
 ## Advanced Usage
 
-The intention of stator was to avoid hijacking ActiveRecord or reinvent the wheel. You can conditionally validate, invoke callbacks, etc. via a with_options-like invocation - no magic:
+The intention of stator was to avoid hijacking ActiveRecord or reinvent the wheel. You can conditionally validate, invoke callbacks, etc. via a conditional block - no magic:
 
 ```ruby
 class User < ActiveRecord::Base
@@ -65,18 +65,18 @@ class User < ActiveRecord::Base
       from :unactivated
       to   :activated
 
-      # wo is an ActiveSupport::OptionMerger with a `if` condition set which will ensure the state 
+      # conditions is a string condition which will ensure the state 
       # was one of the `from` states and is one of the `to` states.
-      conditional do |wo|
-        wo.validate :validate_user_ip_not_blacklisted
+      conditional do |conditions|
+        validate :validate_user_ip_not_blacklisted, if: conditions
       end
 
     end
 
-    # wo is an ActiveSupport::OptionMerger with a `if` condition already set which will ensure the state 
-    # is one of the ones provided to the `#conditional` invocation.
-    conditional :activated, :semiactivated do |wo|
-      wo.validates :email, presence: true
+    # conditions is a string condition which will ensure the state 
+    # is one of the ones provided.
+    conditional :unactivated do |conditions|
+      validates :email, presence: true, unless: conditions
     end
 
   end

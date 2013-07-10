@@ -13,8 +13,8 @@ class User < ActiveRecord::Base
       from any
       to :deactivated
 
-      conditional do |c|
-        c.before_save :set_deactivated
+      conditional do |condition|
+        before_save :set_deactivated, :if => condition
       end
     end
 
@@ -22,8 +22,8 @@ class User < ActiveRecord::Base
       from :pending
       to :semiactivated
 
-      conditional do |c|
-        c.validate :check_email_validity
+      conditional do |condition|
+        validate :check_email_validity, :if => condition
       end
     end
 
@@ -32,8 +32,8 @@ class User < ActiveRecord::Base
       to :hyperactivated
     end
 
-    conditional :semiactivated, :activated do |c|
-      c.validate :check_email_presence
+    conditional :semiactivated, :activated do |condition|
+      validate :check_email_presence, :if => condition
     end
   end
 
@@ -104,7 +104,7 @@ class Zoo < ActiveRecord::Base
     end
 
     conditional :opened do |c|
-      c.validate :validate_lights_are_on
+      validate :validate_lights_are_on, :if => c
     end
   end
 

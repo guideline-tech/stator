@@ -54,11 +54,7 @@ module Stator
     end
 
     def conditional(*states, &block)
-      condition = "#{states.map(&:to_s).inspect}.include?(self._stator_state)"
-
-      klass.with_options :if => condition do |o|
-        klass.instance_exec(o, &block)
-      end
+      klass.instance_exec("#{states.map(&:to_s).inspect}.include?(self._stator_state)", &block)
     end
 
     def matching_transition(from, to)
