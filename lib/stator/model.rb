@@ -3,7 +3,8 @@ module Stator
 
     def stator(initial_state, options = {}, &block)
       include InstanceMethods
-      include HelperMethods if options[:helpers] == true
+      include HelperMethods   if options[:helpers] == true
+      include TrackerMethods  if options[:track] == true
 
       self._stator = ::Stator::Machine.new(self.name, initial_state, options)
       
@@ -43,6 +44,38 @@ module Stator
           method_missing_without_stator(method_name, *args, &block)
         end
 
+      end
+    end
+
+    module TrackerMethods
+
+      def self.included(base)
+        base.class_eval do
+          before_save :_stator_track_transition
+        end
+      end
+
+      protected
+
+
+      def _stator_track_transition
+        self._stator_attempt_to_track_state(self._stator_state_was)
+        self._stator_attempt_to_track_state(self._stator_state)        
+
+        true
+      end
+
+      def _stator_attempt_to_track_state(state_to_track)
+        return unless state_to_track
+
+        field_name = "#{state_to_track}_#{self._stator.field}_at"
+
+        return unless self.respond_to?(field_name)
+        return unless self.respond_to?("#{field_name}=")
+
+        unless self.send(field_name)
+          self.send("#{field_name}=", (Time.zone || Time).now)
+        end
       end
     end
 

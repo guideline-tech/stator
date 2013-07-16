@@ -65,6 +65,7 @@ describe Stator::Model do
 
     u.activated.should == false
     u.state.should eql('deactivated')
+    u.activated_state_at.should be_nil
     u.should be_persisted
   end
 
@@ -102,6 +103,23 @@ describe Stator::Model do
       a.birth
 
       a.can_birth?.should be_false
+    end
+
+  end
+
+  describe 'tracker methods' do
+
+    before do
+      Time.zone = 'Eastern Time (US & Canada)'
+    end
+
+    it 'should store when a record changed state for the first time' do
+      a = Animal.new
+      a.unborn_status_at.should be_nil
+      a.born_status_at.should be_nil
+      a.birth
+      a.unborn_status_at.should be_within(1).of(Time.zone.now)
+      a.born_status_at.should be_within(1).of(Time.zone.now)
     end
 
   end

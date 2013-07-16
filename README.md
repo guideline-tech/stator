@@ -59,7 +59,7 @@ The intention of stator was to avoid hijacking ActiveRecord or reinvent the whee
 class User < ActiveRecord::Base
   extend Stator::Model
 
-  stator :unactivated, field: :status, helpers: true do
+  stator :unactivated, field: :status, helpers: true, track: true do
 
     transition :activate do
       from :unactivated
@@ -93,6 +93,16 @@ u.can_activate?
 ```
 
 Note that asking if a transition can take place via `can_[transition_name]?` does not invoke validations. It simply determines whether the record is in a state which the transition can take place from.
+
+
+The `track: true` option enables timekeeping of the state transition. It will try to set a field in the format of "state_field_at" before saving the record. For example, in the previous state machine the following would occur:
+
+```ruby
+u = User.new
+u.activate
+
+u.activated_status_at
+  # => (now)
 
 
 If you need to access the state machine directly, you can do so via the class:

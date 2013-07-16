@@ -78,7 +78,7 @@ end
 class Animal < ActiveRecord::Base
   extend Stator::Model
 
-  stator :unborn, :field => :status, :helpers => true do
+  stator :unborn, :field => :status, :helpers => true, :track => true do
 
     transition :birth do
       from :unborn
