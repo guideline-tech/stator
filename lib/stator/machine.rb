@@ -4,13 +4,16 @@ module Stator
     attr_reader :initial_state
     attr_reader :field
     attr_reader :transition_names
+    attr_reader :transitions
     attr_reader :states
+    attr_reader :namespace
 
 
     def initialize(class_name, initial_state, options = {})
       @class_name    = class_name
       @initial_state = initial_state
       @field         = options[:field] || :state
+      @namespace     = options[:namespace] || nil
 
       @transitions      = []
 
@@ -28,19 +31,23 @@ module Stator
 
     end
 
+    def integration(record)
+      ::Stator::Integration.new(self, record)
+    end
+
     def get_transition(name)
       @transitions.detect{|t| t.name.to_s == name.to_s}
     end
 
     def transition(name, &block)
       
-      t = ::Stator::Transition.new(@class_name, name)
+      t = ::Stator::Transition.new(@class_name, name, @namespace)
       t.instance_eval(&block) if block_given?
 
       verify_transition_validity(t)
 
       @transitions      << t
-      @transition_names << t.name       unless t.name.nil?
+      @transition_names << t.full_name  unless t.full_name.blank?
       @states           << t.to_state   unless t.to_state.nil?
 
       t
@@ -55,7 +62,7 @@ module Stator
     end
 
     def conditional(*states, &block)
-      klass.instance_exec("#{states.map(&:to_s).inspect}.include?(self._stator_state)", &block)
+      klass.instance_exec("#{states.map(&:to_s).inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state)", &block)
     end
 
     def matching_transition(from, to)
@@ -66,6 +73,7 @@ module Stator
 
     def evaluate
       @transitions.each(&:evaluate)
+      generate_methods
     end
 
     protected
@@ -90,6 +98,18 @@ module Stator
     def verify_name_singularity_of_transition(transition)
       if other = @transitions.detect{|other| transition.name && transition.name == other.name }
         raise "[Stator] another transition already exists with the name of #{transition.name.inspect} in the #{@class_name} class"
+      end
+    end
+
+    def generate_methods
+      self.states.each do |state|
+        method_name = [@namespace, state].compact.join('_')
+        klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+          def #{method_name}?
+            integration = self._stator(#{@namespace.inspect}).integration(self)
+            integration.state == #{state.to_s.inspect}
+          end
+        EV
       end
     end
 

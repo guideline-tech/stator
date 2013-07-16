@@ -27,4 +27,12 @@ ActiveRecord::Schema.define(:version => 20130628161227) do
     t.datetime "updated_at",                            :null => false
   end
 
+  create_table "farms", :force => true do |t|
+    t.string   "name"
+    t.string   "state"
+    t.string   "house_state"
+    t.datetime "created_at",                            :null => false
+    t.datetime "updated_at",                            :null => false
+  end
+
 end

@@ -4,10 +4,13 @@ module Stator
     ANY = '__any__'
 
     attr_reader :name
+    attr_reader :full_name
 
-    def initialize(class_name, name)
+    def initialize(class_name, name, namespace = nil)
       @class_name = class_name
       @name       = name
+      @namespace  = namespace
+      @full_name  = [@namespace, @name].compact.join('_')
       @froms      = []
       @to         = nil
       @callbacks  = {}
@@ -47,7 +50,7 @@ module Stator
     end
 
     def evaluate
-      generate_methods unless @name.nil?
+      generate_methods unless @full_name.blank?
     end
 
     protected
@@ -61,19 +64,36 @@ module Stator
     end
 
     def conditional_string
-      %Q{(#{@froms.inspect}.include?(self._stator_state_was) || #{@froms.inspect}.include?(::Stator::Transition::ANY)) && (self._stator_state == #{@to.inspect} || #{@to.inspect} == ::Stator::Transition::ANY)}
+      %Q{
+          (
+            #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was) || 
+            #{@froms.inspect}.include?(::Stator::Transition::ANY)
+          ) && (
+            self._stator(#{@namespace.inspect}).integration(self).state == #{@to.inspect} || 
+            #{@to.inspect} == ::Stator::Transition::ANY
+          )
+        }
     end
 
     def generate_methods
       klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-        def #{@name}
-          self._stator_state = #{@to.inspect}
-          self.save
+        def #{@full_name}(should_save = true)
+          integration = self._stator(#{@namespace.inspect}).integration(self)
+          integration.state = #{@to.inspect}
+          self.save if should_save
         end
 
-        def #{@name}!
-          self._stator_state = #{@to.inspect}
+        def #{@full_name}!
+          integration = self._stator(#{@namespace.inspect}).integration(self)
+          integration.state = #{@to.inspect}
           self.save!
+        end
+
+        def can_#{@full_name}?
+          machine     = self._stator(#{@namespace.inspect})
+          integration = machine.integration(self)
+          transition  = machine.transitions.detect{|t| t.full_name.to_s == #{@full_name.inspect}.to_s }
+          transition.can?(integration.state)
         end
       EV
     end

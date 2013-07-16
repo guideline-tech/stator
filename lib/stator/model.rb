@@ -2,49 +2,20 @@ module Stator
   module Model
 
     def stator(initial_state, options = {}, &block)
-      include InstanceMethods
-      include HelperMethods   if options[:helpers] == true
+      include InstanceMethods unless self.included_modules.include?(InstanceMethods)
       include TrackerMethods  if options[:track] == true
 
-      self._stator = ::Stator::Machine.new(self.name, initial_state, options)
+      machine = ::Stator::Machine.new(self.name, initial_state, options)
+
+      self._stators ||= {}
+      self._stators = self._stators.merge({machine.namespace.to_s => machine})
       
       if block_given?
-        self._stator.instance_eval(&block)
-        self._stator.evaluate
+        machine.instance_eval(&block)
+        machine.evaluate
       end
 
-      self._stator
-    end
-
-    module HelperMethods
-
-      def self.included(base)
-        base.class_eval do
-          alias_method_chain :method_missing, :stator
-          alias_method_chain :respond_to?, :stator
-        end
-      end
-
-      def respond_to_with_stator?(method_name, include_private = false)
-        respond_to_without_stator?(method_name, include_private) || method_name.to_s =~ /(can)?(#{self._stator.states.join('|')})\?/
-      end
-
-      def method_missing_with_stator(method_name, *args, &block)
-
-        states = self._stator.states.join('|')
-        trans  = self._stator.transition_names.join('|')
-
-        case method_name.to_s
-        when /(#{states})\?/
-          self._stator_state == $1
-        when /can_(#{trans})\?/
-          trans = self._stator.get_transition($1)
-          trans.can?(self._stator_state)
-        else
-          method_missing_without_stator(method_name, *args, &block)
-        end
-
-      end
+      machine
     end
 
     module TrackerMethods
@@ -55,35 +26,26 @@ module Stator
         end
       end
 
+
       protected
 
 
       def _stator_track_transition
-        self._stator_attempt_to_track_state(self._stator_state_was)
-        self._stator_attempt_to_track_state(self._stator_state)        
+
+        self._stators.each do |namespace, machine|
+          machine.integration(self).track_transition
+        end
 
         true
       end
 
-      def _stator_attempt_to_track_state(state_to_track)
-        return unless state_to_track
-
-        field_name = "#{state_to_track}_#{self._stator.field}_at"
-
-        return unless self.respond_to?(field_name)
-        return unless self.respond_to?("#{field_name}=")
-
-        unless self.send(field_name)
-          self.send("#{field_name}=", (Time.zone || Time).now)
-        end
-      end
     end
 
     module InstanceMethods
 
       def self.included(base)
         base.class_eval do
-          cattr_accessor    :_stator
+          class_attribute   :_stators
           after_initialize  :_stator_set_default_state
           validate          :_stator_validate_transition
         end
@@ -92,47 +54,19 @@ module Stator
       protected
 
       def _stator_set_default_state
-        return if self._stator_state
-        self._stator_state = self._stator.initial_state.to_s
-        self.changed_attributes.delete(self._stator.field.to_s)
-        true
-      end
-
-      def _stator_validate_transition
-        return unless self._stator_state_changed?
-
-        was = self._stator_state_was
-        is  = self._stator_state
-
-        if self.new_record?
-          unless _stator.matching_transition(::Stator::Transition::ANY, is)
-            self.errors.add(self._stator.field, "is not a valid state")
-          end
-        else
-          unless _stator.matching_transition(was, is)
-            self.errors.add(self._stator.field, "cannot transition to #{is.inspect} from #{was.inspect}")
-          end
+        self._stators.each do |namespace, machine|
+          machine.integration(self).set_default_state
         end
       end
 
-      def _stator_state
-        self.send(self._stator.field)
+      def _stator_validate_transition
+        self._stators.each do |namespace, machine|
+          machine.integration(self).validate_transition
+        end
       end
 
-      def _stator_state=(val)
-        self.send("#{self._stator.field}=",  val)
-      end
-
-      def _stator_state_changed?
-        self.send("#{self._stator.field}_changed?")
-      end
-
-      def _stator_state_was
-        self.send("#{self._stator.field}_was")
-      end
-
-      def _stator
-        self.class.stator
+      def _stator(namespace)
+        self._stators[namespace.to_s]
       end
 
     end

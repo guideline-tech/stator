@@ -116,3 +116,24 @@ class Zoo < ActiveRecord::Base
     true
   end
 end
+
+
+class Farm < ActiveRecord::Base
+  extend Stator::Model
+
+  stator :dirty do
+    transition :cleanup do
+     from :dirty
+     to :clean
+    end
+  end
+
+
+  stator :dirty, :field => 'house_state', :namespace => 'house' do
+    transition :cleanup do
+      from :dirty
+      to :clean
+    end
+  end
+
+end

@@ -2,10 +2,6 @@ require 'spec_helper'
 
 describe Stator::Model do
 
-  it 'should provide access to the state machine' do
-    User._stator.should_not be_nil
-  end
-
   it 'should set the default state after initialization' do
     u = User.new
     u.state.should eql('pending')
@@ -88,6 +84,28 @@ describe Stator::Model do
     a.should_not be_grown_up
     a.status = 'grown_up'
     a.save
+  end
+
+  it 'should allow multiple machines in the same model' do
+    f = Farm.new
+    f.should be_dirty
+    f.should be_house_dirty
+
+    f.cleanup
+
+    f.should_not be_dirty
+    f.should be_house_dirty
+
+    f.house_cleanup
+
+    f.should_not be_house_dirty
+  end
+
+  it 'should allow saving to be skipped' do
+    f = Farm.new
+    f.cleanup(false)
+
+    f.should_not be_persisted
   end
 
   describe 'helper methods' do
