@@ -103,7 +103,7 @@ u.activate
 
 u.activated_status_at
   # => (now)
-
+```
 
 If you need to access the state machine directly, you can do so via the class:
 

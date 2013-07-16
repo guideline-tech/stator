@@ -85,6 +85,8 @@ class Animal < ActiveRecord::Base
       to :born
     end
 
+    state :grown_up
+
   end
 end
 

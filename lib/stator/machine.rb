@@ -46,6 +46,14 @@ module Stator
       t
     end
 
+    def state(name, &block)
+      transition(nil) do 
+        from any
+        to name
+        instance_eval(&block) if block_given?
+      end
+    end
+
     def conditional(*states, &block)
       klass.instance_exec("#{states.map(&:to_s).inspect}.include?(self._stator_state)", &block)
     end
@@ -80,7 +88,7 @@ module Stator
     end
 
     def verify_name_singularity_of_transition(transition)
-      if other = @transitions.detect{|other| transition.name == other.name }
+      if other = @transitions.detect{|other| transition.name && transition.name == other.name }
         raise "[Stator] another transition already exists with the name of #{transition.name.inspect} in the #{@class_name} class"
       end
     end

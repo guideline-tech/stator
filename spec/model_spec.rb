@@ -83,6 +83,13 @@ describe Stator::Model do
     a.birth!
   end
 
+  it 'should create implicit transitions for state declarations' do
+    a = Animal.new
+    a.should_not be_grown_up
+    a.status = 'grown_up'
+    a.save
+  end
+
   describe 'helper methods' do
 
     it 'should answer the question of whether the state is currently the one invoked' do
