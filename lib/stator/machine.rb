@@ -47,8 +47,8 @@ module Stator
       verify_transition_validity(t)
 
       @transitions      << t
-      @transition_names << t.full_name  unless t.full_name.blank?
-      @states           << t.to_state   unless t.to_state.nil?
+      @transition_names |= [t.full_name]  unless t.full_name.blank?
+      @states           |= [t.to_state]   unless t.to_state.nil?
 
       t
     end
