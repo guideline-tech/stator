@@ -36,7 +36,12 @@ module Stator
 
 
     def set_default_state
-      return if self.state
+      begin
+        return if self.state
+      rescue ActiveModel::MissingAttributeError
+        return
+      end
+
       self.state = @machine.initial_state.to_s
 
       @record.changed_attributes.delete(@machine.field.to_s)
