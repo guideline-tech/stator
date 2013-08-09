@@ -33,21 +33,6 @@ module Stator
 
 
 
-
-
-    def set_default_state
-      begin
-        return if self.state
-      rescue ActiveModel::MissingAttributeError
-        return
-      end
-
-      self.state = @machine.initial_state.to_s
-
-      @record.changed_attributes.delete(@machine.field.to_s)
-      true
-    end
-
     def validate_transition
       return unless self.state_changed?
 

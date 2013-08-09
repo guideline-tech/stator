@@ -2,7 +2,8 @@ class User < ActiveRecord::Base
   extend Stator::Model
 
 
-  stator :pending do
+  # initial state = pending
+  stator do
 
     transition :activate do
       from :pending, :semiactivated
@@ -78,7 +79,8 @@ end
 class Animal < ActiveRecord::Base
   extend Stator::Model
 
-  stator :unborn, :field => :status, :helpers => true, :track => true do
+  # initial state = unborn
+  stator :field => :status, :helpers => true, :track => true do
 
     transition :birth do
       from :unborn
@@ -93,7 +95,8 @@ end
 class Zoo < ActiveRecord::Base
   extend Stator::Model
 
-  stator :closed do
+  # initial state = closed
+  stator do
 
     transition :open do
       from :closed
@@ -121,7 +124,8 @@ end
 class Farm < ActiveRecord::Base
   extend Stator::Model
 
-  stator :dirty do
+  # initial state = dirty
+  stator do
     transition :cleanup do
      from :dirty
      to :clean
@@ -129,11 +133,30 @@ class Farm < ActiveRecord::Base
   end
 
 
-  stator :dirty, :field => 'house_state', :namespace => 'house' do
+  # initial state = dirty
+  stator :field => 'house_state', :namespace => 'house' do
     transition :cleanup do
       from :dirty
       to :clean
     end
   end
 
+end
+
+class Factory < ActiveRecord::Base
+  extend Stator::Model
+
+  # initial state = nil
+  stator do
+    transition :construct do
+      from nil
+      to :constructed
+    end
+
+    transition :destruct do
+      from :constructed
+      to :on_the_ground
+    end
+  end
+  
 end
