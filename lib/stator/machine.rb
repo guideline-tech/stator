@@ -9,25 +9,20 @@ module Stator
     attr_reader :namespace
 
 
-    def initialize(class_name, initial_state, options = {})
-      @class_name    = class_name
-      @initial_state = initial_state
+    def initialize(klass, options = {})
+      @class_name    = klass.name
       @field         = options[:field] || :state
       @namespace     = options[:namespace] || nil
+
+      @initial_state = klass.columns_hash[@field.to_s].default
 
       @transitions      = []
 
       # pushed out into their own variables for performance reasons (AR integration can use method missing - see the HelperMethods module)
       @transition_names = []
-      @states           = []
+      @states           = [@initial_state].compact
 
       @options       = options
-
-      # set up the nil-to-initial transition so validations can all work the same
-      transition(nil) do
-        from(nil)
-        to(initial_state)
-      end
 
     end
 

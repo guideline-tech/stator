@@ -8,13 +8,13 @@ gem 'stator', github: 'mnelson/stator', tag: 'v0.0.1'
 
 ## Usage
 
-If you've used the state_machine it's a pretty similar dsl. You define your state machine with it's initial state, you define your transitions, and you define your callbacks (if any).
+If you've used the state_machine it's a pretty similar dsl. You define your state machine, transitions, states, and your callbacks (if any). One difference is that stator assumes you've set your db column to the initial state.
 
 ```ruby
   class User < ActiveRecord::Base
     extend Stator::Model
 
-    stator :unactivated do
+    stator do
 
       transition :semiactivate do
         from :unactivated
@@ -59,7 +59,7 @@ The intention of stator was to avoid hijacking ActiveRecord or reinvent the whee
 class User < ActiveRecord::Base
   extend Stator::Model
 
-  stator :unactivated, field: :status, track: true do
+  stator field: :status, track: true do
 
     transition :activate do
       from :unactivated
@@ -113,11 +113,13 @@ You can have multiple state machines for your model:
 class User < ActiveRecord::Base
   extend Stator::Model
 
-  stator :asleep do
+  # initial state = asleep
+  stator do
     # wake up
   end
 
-  stator :incomplete, namespace: 'homework', field: 'homework_state' do
+  # initial state = incomplete
+  stator namespace: 'homework', field: 'homework_state' do
     # get it done
   end
 end
@@ -127,7 +129,7 @@ end
 If you need to access the state machine directly, you can do so via the class:
 
 ```ruby
-User._stator(namesapce)
+User._stator(namespace)
 ```
 
 #### TODO
