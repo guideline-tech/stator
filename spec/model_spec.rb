@@ -108,6 +108,15 @@ describe Stator::Model do
     f.should_not be_persisted
   end
 
+  it 'should allow no initial state' do
+    f = Factory.new
+    f.state.should be_nil
+
+    f.construct.should be_true
+
+    f.state.should eql('constructed')
+  end
+
   describe 'helper methods' do
 
     it 'should answer the question of whether the state is currently the one invoked' do

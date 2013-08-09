@@ -142,3 +142,21 @@ class Farm < ActiveRecord::Base
   end
 
 end
+
+class Factory < ActiveRecord::Base
+  extend Stator::Model
+
+  # initial state = nil
+  stator do
+    transition :construct do
+      from nil
+      to :constructed
+    end
+
+    transition :destruct do
+      from :constructed
+      to :on_the_ground
+    end
+  end
+  
+end

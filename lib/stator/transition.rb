@@ -17,7 +17,7 @@ module Stator
     end
 
     def from(*froms)
-      @froms |= froms.map{|f| f ? f.to_s : nil }
+      @froms |= froms.map{|f| f.try(:to_s) } # nils are ok
     end
 
     def to(to)
