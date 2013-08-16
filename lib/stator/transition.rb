@@ -10,7 +10,7 @@ module Stator
       @class_name = class_name
       @name       = name
       @namespace  = namespace
-      @full_name  = [@namespace, @name].compact.join('_')
+      @full_name  = [@namespace, @name].compact.join('_') if @name
       @froms      = []
       @to         = nil
       @callbacks  = {}
