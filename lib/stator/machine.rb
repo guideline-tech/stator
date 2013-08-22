@@ -14,7 +14,7 @@ module Stator
       @field         = options[:field] || :state
       @namespace     = options[:namespace] || nil
 
-      @initial_state = klass.columns_hash[@field.to_s].default
+      @initial_state = klass.columns_hash[@field.to_s].try(:default)
 
       @transitions      = []
 
@@ -35,7 +35,7 @@ module Stator
     end
 
     def transition(name, &block)
-      
+
       t = ::Stator::Transition.new(@class_name, name, @namespace)
       t.instance_eval(&block) if block_given?
 
@@ -49,7 +49,7 @@ module Stator
     end
 
     def state(name, &block)
-      transition(nil) do 
+      transition(nil) do
         from any
         to name
         instance_eval(&block) if block_given?
