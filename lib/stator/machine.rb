@@ -14,7 +14,8 @@ module Stator
       @field         = options[:field] || :state
       @namespace     = options[:namespace] || nil
 
-      @initial_state = klass.columns_hash[@field.to_s].try(:default)
+      # rescue nil since the table may not exist yet.
+      @initial_state = klass.columns_hash[@field.to_s].default rescue nil
 
       @transitions      = []
 
