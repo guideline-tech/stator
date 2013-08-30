@@ -23,7 +23,7 @@ module Stator
 
 
     def state_was
-      @record.send("#{@machine.field}_was")
+      @record.changes.empty? ? @record.previous_changes[@machine.field.to_s].try(:[], 0) : @record.send("#{@machine.field}_was")
     end
 
 
