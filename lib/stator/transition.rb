@@ -37,12 +37,12 @@ module Stator
     end
 
     def valid?(from, to)
-      can?(from) && 
+      can?(from) &&
       (@to == to || @to == ANY || to == ANY)
     end
 
-    def conditional(&block)
-      klass.instance_exec(conditional_string, &block)
+    def conditional(use_previous_changes = false, &block)
+      klass.instance_exec(conditional_string(use_previous_changes), &block)
     end
 
     def any
@@ -63,13 +63,13 @@ module Stator
       @callbacks[kind] || []
     end
 
-    def conditional_string
+    def conditional_string(use_previous_changes)
       %Q{
           (
-            #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was) || 
+            #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was(#{use_previous_changes.inspect})) ||
             #{@froms.inspect}.include?(::Stator::Transition::ANY)
           ) && (
-            self._stator(#{@namespace.inspect}).integration(self).state == #{@to.inspect} || 
+            self._stator(#{@namespace.inspect}).integration(self).state == #{@to.inspect} ||
             #{@to.inspect} == ::Stator::Transition::ANY
           )
         }

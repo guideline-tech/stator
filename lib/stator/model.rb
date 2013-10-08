@@ -9,7 +9,7 @@ module Stator
 
       self._stators ||= {}
       self._stators = self._stators.merge({machine.namespace.to_s => machine})
-      
+
       if block_given?
         machine.instance_eval(&block)
         machine.evaluate

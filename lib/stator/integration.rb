@@ -22,8 +22,8 @@ module Stator
     end
 
 
-    def state_was
-      @record.changes.empty? ? @record.previous_changes[@machine.field.to_s].try(:[], 0) : @record.send("#{@machine.field}_was")
+    def state_was(use_previous = false)
+      use_previous && @record.changes.empty? ? @record.previous_changes[@machine.field.to_s].try(:[], 0) : @record.send("#{@machine.field}_was")
     end
 
 
@@ -52,7 +52,7 @@ module Stator
 
     def track_transition
       self.attempt_to_track_state(self.state_was)
-      self.attempt_to_track_state(self.state)        
+      self.attempt_to_track_state(self.state)
 
       true
     end
@@ -73,6 +73,6 @@ module Stator
       end
     end
 
-    
+
   end
 end
