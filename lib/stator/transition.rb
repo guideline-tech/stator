@@ -41,8 +41,8 @@ module Stator
       (@to == to || @to == ANY || to == ANY)
     end
 
-    def conditional(use_previous_changes = false, &block)
-      klass.instance_exec(conditional_string(use_previous_changes), &block)
+    def conditional(options = {}, &block)
+      klass.instance_exec(conditional_string(options), &block)
     end
 
     def any
@@ -63,10 +63,11 @@ module Stator
       @callbacks[kind] || []
     end
 
-    def conditional_string(use_previous_changes)
+    def conditional_string(options = {})
+      options[:use_previous] ||= false
       %Q{
           (
-            #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was(#{use_previous_changes.inspect})) ||
+            #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was(#{options[:use_previous].inspect})) ||
             #{@froms.inspect}.include?(::Stator::Transition::ANY)
           ) && (
             self._stator(#{@namespace.inspect}).integration(self).state == #{@to.inspect} ||

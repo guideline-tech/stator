@@ -83,14 +83,14 @@ class User < ActiveRecord::Base
 end
 ```
 
-Within a transition, the `conditional` block accepts a boolean which determines whether the state checks will use the records previous_changes if the current changes are empty. This is especially useful for after_commit scenarios where the record's changes hash is cleared.
+Within a transition, the `conditional` block accepts a `use_previous` option which tells the state checks to use the record's previous_changes rather than the current changes. This is especially useful for after_commit scenarios where the record's changes hash is cleared before the execution begins.
 
 ```ruby
 transition :activate do
   from :unactivated
   to   :activated
 
-  conditional(true) do |conditions|
+  conditional(use_previous: true) do |conditions|
     after_commit :send_things, if: conditions
   end
 ```
