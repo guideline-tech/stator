@@ -18,6 +18,7 @@ module Stator
       @initial_state = klass.columns_hash[@field.to_s].default rescue nil
 
       @transitions      = []
+      @aliases          = []
 
       # pushed out into their own variables for performance reasons (AR integration can use method missing - see the HelperMethods module)
       @transition_names = []
@@ -49,6 +50,13 @@ module Stator
       t
     end
 
+    def state_alias(name, options = {}, &block)
+      a = ::Stator::Alias.new(self, name, options)
+      a.instance_eval(&block) if block_given?
+      @aliases << a
+      a
+    end
+
     def state(name, &block)
       transition(nil) do
         from any
@@ -69,14 +77,15 @@ module Stator
 
     def evaluate
       @transitions.each(&:evaluate)
+      @aliases.each(&:evaluate)
       generate_methods
     end
-
-    protected
 
     def klass
       @class_name.constantize
     end
+
+    protected
 
     def verify_transition_validity(transition)
       verify_state_singularity_of_transition(transition)

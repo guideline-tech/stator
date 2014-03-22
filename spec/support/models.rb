@@ -36,6 +36,17 @@ class User < ActiveRecord::Base
     conditional :semiactivated, :activated do |condition|
       validate :check_email_presence, :if => condition
     end
+
+    state_alias :active, :constant => true, :scope => true do
+      is :activated, :hyperactivated
+      opposite :inactive, :constant => true, :scope => true
+    end
+
+    state_alias :luke_warm, :constant => :luke_warmers, :scope => :luke_warmers do
+      is :semiactivated
+      opposite :iced_tea
+    end
+
   end
 
   validate :email_is_right_length
@@ -139,6 +150,10 @@ class Farm < ActiveRecord::Base
       from :dirty
       to :clean
     end
+
+    state_alias :cleaned do
+      is_not :dirty
+    end
   end
 
 end
@@ -158,5 +173,5 @@ class Factory < ActiveRecord::Base
       to :on_the_ground
     end
   end
-  
+
 end

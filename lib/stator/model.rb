@@ -2,13 +2,14 @@ module Stator
   module Model
 
     def stator(options = {}, &block)
-      include InstanceMethods unless self.included_modules.include?(InstanceMethods)
-      include TrackerMethods  if options[:track] == true
 
-      machine = ::Stator::Machine.new(self, options)
+      class_attribute :_stators unless respond_to?(:_stators)
+
+      include InstanceMethods   unless self.included_modules.include?(InstanceMethods)
+      include TrackerMethods    if options[:track] == true
 
       self._stators ||= {}
-      self._stators = self._stators.merge({machine.namespace.to_s => machine})
+      machine = (self._stators[options[:namespace].to_s] ||= ::Stator::Machine.new(self, options))
 
       if block_given?
         machine.instance_eval(&block)
@@ -16,6 +17,10 @@ module Stator
       end
 
       machine
+    end
+
+    def _stator(namespace)
+      self._stators[namespace.to_s]
     end
 
     module TrackerMethods
@@ -45,8 +50,7 @@ module Stator
 
       def self.included(base)
         base.class_eval do
-          class_attribute   :_stators
-          validate          :_stator_validate_transition
+          validate :_stator_validate_transition
         end
       end
 
@@ -59,7 +63,7 @@ module Stator
       end
 
       def _stator(namespace)
-        self._stators[namespace.to_s]
+        self.class._stator(namespace)
       end
 
     end

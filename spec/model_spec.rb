@@ -158,4 +158,57 @@ describe Stator::Model do
 
   end
 
+  describe 'aliasing' do
+    it 'should allow aliasing within the dsl' do
+      u = User.new(email: 'doug@example.com')
+      u.should respond_to(:active?)
+      u.should respond_to(:inactive?)
+
+      u.should_not be_active
+
+      u.inactive?
+      u.should be_inactive
+
+      u.activate!
+      u.should be_active
+      u.should_not be_inactive
+
+      u.hyperactivate!
+      u.should be_active
+      u.should_not be_inactive
+
+      User::ACTIVE_STATES.should eql(['activated', 'hyperactivated'])
+      User::INACTIVE_STATES.should eql(['pending', 'deactivated', 'semiactivated'])
+
+      u2 = User.create(email: 'phil@example.com')
+
+      User.active.to_sql.should eq("SELECT users.* FROM users  WHERE users.state IN ('activated', 'hyperactivated')")
+      User.inactive.to_sql.should eq("SELECT users.* FROM users  WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
+    end
+
+    it 'should namespace aliases just like everything else' do
+      f = Farm.new
+      f.should respond_to(:house_cleaned?)
+
+      f.should_not be_house_cleaned
+      f.house_cleanup!
+
+      f.should be_house_cleaned
+    end
+
+    it 'should allow for explicit constant and scope names to be provided' do
+      User.should respond_to(:luke_warmers)
+      defined?(User::LUKE_WARMERS).should be_true
+      u = User.new
+      u.should respond_to(:luke_warm?)
+    end
+
+    it 'should not create constants or scopes by default' do
+      u = User.new
+      u.should respond_to(:iced_tea?)
+      defined?(User::ICED_TEA_STATES).should be_false
+      User.should_not respond_to(:iced_tea)
+    end
+  end
+
 end
