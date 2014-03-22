@@ -160,7 +160,7 @@ describe Stator::Model do
 
   describe 'aliasing' do
     it 'should allow aliasing within the dsl' do
-      u = User.new(email: 'doug@example.com')
+      u = User.new(:email => 'doug@example.com')
       u.should respond_to(:active?)
       u.should respond_to(:inactive?)
 
@@ -180,10 +180,10 @@ describe Stator::Model do
       User::ACTIVE_STATES.should eql(['activated', 'hyperactivated'])
       User::INACTIVE_STATES.should eql(['pending', 'deactivated', 'semiactivated'])
 
-      u2 = User.create(email: 'phil@example.com')
+      u2 = User.create(:email => 'phil@example.com')
 
-      User.active.to_sql.should eq("SELECT users.* FROM users  WHERE users.state IN ('activated', 'hyperactivated')")
-      User.inactive.to_sql.should eq("SELECT users.* FROM users  WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
+      User.active.to_sql.gsub('  ', ' ').should eq("SELECT users.* FROM users WHERE users.state IN ('activated', 'hyperactivated')")
+      User.inactive.to_sql.gsub('  ', ' ').should eq("SELECT users.* FROM users WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
     end
 
     it 'should namespace aliases just like everything else' do
