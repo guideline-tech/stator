@@ -144,6 +144,59 @@ If you need to access the state machine directly, you can do so via the class:
 User._stator(namespace)
 ```
 
+#### Aliasing
+
+It's a really common case to have a set of states evaluated as a single concept. For example, many apps have a concept of "active" users. You generally see something like this:
+
+```ruby
+class User < ActiveRecord::Base
+  ACTIVE_STATES = %w(semiactivated activated)
+
+  scope :active, -> { where(state: ACTIVE_STATES) }
+
+  def active?
+    self.state.in?(ACTIVE_STATES)
+  end
+end
+```
+
+To this point, we're doing ok. But how about defining inactive as well? At this point things start getting a little dirtier since a change to ACTIVE_STATES should impact INACTIVE_STATES. For this reason, stator allows you to define state aliases:
+
+```ruby
+class User < ActiveRecord::Base
+  extend Stator::Model
+
+  stator do
+    # forgoing state definitions...
+
+    state_alias :active do
+      is :semiactivated, :activated
+      opposite :inactive
+    end
+  end
+end
+```
+
+The provided example will define an `active?` and `inactive?` method. If you want to create the constant and/or the scope, just pass them as options to the state_alias method:
+
+```ruby
+# will generate a User::ACTIVE_STATES constant, User.active scope, and User#active? instance method
+state_alias :active, scope: true, constant: true do
+  # ...
+end
+```
+
+Passing `true` for the scope or constant will result in default naming conventions. You can pass your own names if you'd rather:
+
+```ruby
+# will generate a User::THE_ACTIVE_STATES constant, User.the_active_ones scope, and User#active? instance method
+state_alias :active, scope: :the_active_ones, constant: :the_active_states do
+  # ...
+end
+```
+
+The `opposite` method also accepts the scope and constant options, but does not yield to a block since the state definitions are inheritenly tied to the ones described in the parent state_alias block.
+
 #### TODO
 
 * Allow for multiple variations of a transition (shift_down style - :third_gear => :second_gear, :second_gear => :first_gear)
