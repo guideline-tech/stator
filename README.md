@@ -8,7 +8,7 @@ gem 'stator', '~> x.y.z'
 
 ## Usage
 
-If you've used the state_machine it's a pretty similar dsl. You define your state machine, transitions, states, and your callbacks (if any). One difference is that stator assumes you've set your db column to the initial state.
+If you've used the state_machine gem it's a pretty similar dsl. You define your state machine, transitions, states, and your callbacks (if any). One difference is that stator assumes you've set your db column to the initial state.
 
 ```ruby
   class User < ActiveRecord::Base
