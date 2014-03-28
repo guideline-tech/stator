@@ -67,6 +67,8 @@ module Stator
       options[:use_previous] ||= false
       %Q{
           (
+            self._stator(#{@namespace.inspect}).integration(self).state_changed?
+          ) && (
             #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was(#{options[:use_previous].inspect})) ||
             #{@froms.inspect}.include?(::Stator::Transition::ANY)
           ) && (
@@ -80,12 +82,24 @@ module Stator
       klass.class_eval <<-EV, __FILE__, __LINE__ + 1
         def #{@full_name}(should_save = true)
           integration = self._stator(#{@namespace.inspect}).integration(self)
+
+          unless can_#{@full_name}?
+            integration.invalid_transition!(integration.state, #{@to.inspect}) if should_save
+            return false
+          end
+
           integration.state = #{@to.inspect}
           self.save if should_save
         end
 
         def #{@full_name}!
           integration = self._stator(#{@namespace.inspect}).integration(self)
+
+          unless can_#{@full_name}?
+            integration.invalid_transition!(integration.state, #{@to.inspect})
+            raise ActiveRecord::RecordInvalid.new(self)
+          end
+
           integration.state = #{@to.inspect}
           self.save!
         end

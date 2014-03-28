@@ -44,14 +44,19 @@ module Stator
       is  = self.state
 
       if @record.new_record?
-        unless @machine.matching_transition(::Stator::Transition::ANY, is)
-          @record.errors.add(@machine.field, "is not a valid state")
-        end
+        invalid_state! unless @machine.matching_transition(::Stator::Transition::ANY, is)
       else
-        unless @machine.matching_transition(was, is)
-          @record.errors.add(@machine.field, "cannot transition to #{is.inspect} from #{was.inspect}")
-        end
+        invalid_transition!(was, is) unless @machine.matching_transition(was, is)
       end
+    end
+
+    # todo: i18n
+    def invalid_state!
+      @record.errors.add(@machine.field, "is not a valid state")
+    end
+
+    def invalid_transition!(was, is)
+      @record.errors.add(@machine.field, "cannot transition to #{is.inspect} from #{was.inspect}")
     end
 
     def track_transition

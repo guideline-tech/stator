@@ -41,7 +41,16 @@ describe Stator::Model do
 
     u.should_not be_valid
     u.errors[:state].should_not be_empty
+  end
 
+  it 'should not allow a transition that is currently in a `to` state' do
+    u = User.new(:email => 'fred@example.com')
+    u.activate!
+    u.hyperactivate!
+
+    lambda{
+      u.hyperactivate!
+    }.should raise_error(/cannot transition to \"hyperactivated\" from \"hyperactivated\"/)
   end
 
   it 'should run conditional validations' do
