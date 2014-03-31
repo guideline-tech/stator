@@ -31,8 +31,12 @@ module Stator
     end
 
 
-    def state_changed?
-      @record.send("#{@machine.field}_changed?")
+    def state_changed?(use_previous = false)
+      if use_previous
+        !!@record.previous_changes[@machine.field.to_s]
+      else
+        @record.send("#{@machine.field}_changed?")
+      end
     end
 
 

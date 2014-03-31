@@ -67,7 +67,7 @@ module Stator
       options[:use_previous] ||= false
       %Q{
           (
-            self._stator(#{@namespace.inspect}).integration(self).state_changed?
+            self._stator(#{@namespace.inspect}).integration(self).state_changed?(#{options[:use_previous].inspect})
           ) && (
             #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was(#{options[:use_previous].inspect})) ||
             #{@froms.inspect}.include?(::Stator::Transition::ANY)
