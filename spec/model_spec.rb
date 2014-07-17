@@ -121,7 +121,7 @@ describe Stator::Model do
     f = Factory.new
     f.state.should be_nil
 
-    f.construct.should be_true
+    f.construct.should eql(true)
 
     f.state.should eql('constructed')
   end
@@ -141,11 +141,11 @@ describe Stator::Model do
 
     it 'should determine if it can validly execute a transition' do
       a = Animal.new
-      a.can_birth?.should be_true
+      a.can_birth?.should eql(true)
 
       a.birth
 
-      a.can_birth?.should be_false
+      a.can_birth?.should eql(false)
     end
 
   end
@@ -163,6 +163,23 @@ describe Stator::Model do
       a.birth
       a.unborn_status_at.should be_within(1).of(Time.zone.now)
       a.born_status_at.should be_within(1).of(Time.zone.now)
+    end
+
+    it 'should store when a record change states' do
+      a = Animal.new
+      a.status_changed_at.should be_nil
+
+      a.birth
+
+      a.status_changed_at.should be_within(1).of(Time.zone.now)
+
+      previous_status_changed_at = a.status_changed_at
+
+      a.name = "new name"
+      a.save
+
+      a.status_changed_at.should eql(previous_status_changed_at)
+
     end
 
   end
@@ -207,7 +224,7 @@ describe Stator::Model do
 
     it 'should allow for explicit constant and scope names to be provided' do
       User.should respond_to(:luke_warmers)
-      defined?(User::LUKE_WARMERS).should be_true
+      (!!defined?(User::LUKE_WARMERS)).should eql(true)
       u = User.new
       u.should respond_to(:luke_warm?)
     end
@@ -215,7 +232,7 @@ describe Stator::Model do
     it 'should not create constants or scopes by default' do
       u = User.new
       u.should respond_to(:iced_tea?)
-      defined?(User::ICED_TEA_STATES).should be_false
+      (!!defined?(User::ICED_TEA_STATES)).should eql(false)
       User.should_not respond_to(:iced_tea)
     end
   end
