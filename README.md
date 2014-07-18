@@ -119,6 +119,8 @@ u.activated_status_at
   # => (now)
 ```
 
+`track: true` will also look for a "state_changed_at" field and will update that if it's present.
+
 You can have multiple state machines for your model:
 
 ```ruby
