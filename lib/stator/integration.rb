@@ -66,6 +66,7 @@ module Stator
     def track_transition
       self.attempt_to_track_state(self.state_was)
       self.attempt_to_track_state(self.state)
+      self.attempt_to_track_state_changed_timestamp
 
       true
     end
@@ -84,6 +85,17 @@ module Stator
       unless @record.send(field_name)
         @record.send("#{field_name}=", (Time.zone || Time).now)
       end
+    end
+
+    def attempt_to_track_state_changed_timestamp
+      return unless self.state_changed?
+
+      field_name = "#{@machine.field}_changed_at"
+
+      return unless @record.respond_to?(field_name)
+      return unless @record.respond_to?("#{field_name}=")
+
+      @record.send("#{field_name}=", (Time.zone || Time).now)
     end
 
 

@@ -16,6 +16,7 @@ ActiveRecord::Schema.define(:version => 20130628161227) do
     t.string   "status",                                :default => 'unborn'
     t.datetime "created_at",                            :null => false
     t.datetime "updated_at",                            :null => false
+    t.datetime "status_changed_at"
     t.datetime "unborn_status_at"
     t.datetime "born_status_at"
   end
