@@ -156,12 +156,18 @@ describe Stator::Model do
       Time.zone = 'Eastern Time (US & Canada)'
     end
 
+    it 'should store the initial state timestamp when the record is created' do
+      a = Animal.new
+      a.save
+      a.unborn_status_at.should be_within(1).of(Time.zone.now)
+    end
+
     it 'should store when a record changed state for the first time' do
       a = Animal.new
       a.unborn_status_at.should be_nil
       a.born_status_at.should be_nil
       a.birth
-      a.unborn_status_at.should be_within(1).of(Time.zone.now)
+      a.unborn_status_at.should be_nil
       a.born_status_at.should be_within(1).of(Time.zone.now)
     end
 
