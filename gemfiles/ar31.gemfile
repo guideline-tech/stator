@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 # Specify your gem's dependencies in stator.gemspec
-gem 'activerecord', '3.1.12'
+gem 'activerecord', '~> 3.1.0'
 
 gemspec :path => '../'
 

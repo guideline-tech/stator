@@ -147,6 +147,14 @@ If you need to access the state machine directly, you can do so via the class:
 User._stator(namespace)
 ```
 
+You can opt out of state transition validation by using the `without_state_transition_validations` method:
+
+```ruby
+user.without_state_transition_validations do
+  user.activate!
+end
+```
+
 #### Aliasing
 
 It's a really common case to have a set of states evaluated as a single concept. For example, many apps have a concept of "active" users. You generally see something like this:

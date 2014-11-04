@@ -126,6 +126,21 @@ describe Stator::Model do
     f.state.should eql('constructed')
   end
 
+  it 'should allow any transition if validations are opted out of' do
+    u = User.new
+    u.email = 'doug@example.com'
+
+    u.can_hyperactivate?.should eql(false)
+    u.hyperactivate.should eql(false)
+
+    u.state.should eql('pending')
+
+    u.without_state_transition_validations do
+      u.can_hyperactivate?.should eql(true)
+      u.hyperactivate.should eql(true)
+    end
+  end
+
   describe 'helper methods' do
 
     it 'should answer the question of whether the state is currently the one invoked' do

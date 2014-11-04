@@ -54,6 +54,12 @@ module Stator
         end
       end
 
+      def without_state_transition_validations(namespace = '')
+        self._stator(namespace).without_validation do
+          yield
+        end
+      end
+
       protected
 
       def _stator_validate_transition
@@ -62,7 +68,7 @@ module Stator
         end
       end
 
-      def _stator(namespace)
+      def _stator(namespace = '')
         self.class._stator(namespace)
       end
 

@@ -7,6 +7,7 @@ module Stator
     attr_reader :transitions
     attr_reader :states
     attr_reader :namespace
+    attr_reader :skip_validations
 
 
     def initialize(klass, options = {})
@@ -83,6 +84,14 @@ module Stator
 
     def klass
       @class_name.constantize
+    end
+
+    def without_validation
+      was = @skip_validations
+      @skip_validations = true
+      yield
+    ensure
+      @skip_validations = was
     end
 
     protected

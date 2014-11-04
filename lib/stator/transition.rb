@@ -106,6 +106,8 @@ module Stator
 
         def can_#{@full_name}?
           machine     = self._stator(#{@namespace.inspect})
+          return true if machine.skip_validations
+
           integration = machine.integration(self)
           transition  = machine.transitions.detect{|t| t.full_name.to_s == #{@full_name.inspect}.to_s }
           transition.can?(integration.state)

@@ -43,6 +43,7 @@ module Stator
 
     def validate_transition
       return unless self.state_changed?
+      return if @machine.skip_validations
 
       was = self.state_was
       is  = self.state
