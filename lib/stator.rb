@@ -1,11 +1,6 @@
-require "stator/version"
-
-module Stator
-
-  autoload :Alias,        'stator/alias'
-  autoload :Integration,  'stator/integration'
-  autoload :Machine,      'stator/machine'
-  autoload :Model,        'stator/model'
-  autoload :Transition,   'stator/transition'
-
-end
+require 'stator/version'
+require 'stator/alias'
+require 'stator/integration'
+require 'stator/machine'
+require 'stator/model'
+require 'stator/transition'
