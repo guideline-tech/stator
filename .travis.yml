@@ -1,11 +1,11 @@
 language: ruby
 
 rvm:
-  - 1.9.3
   - 2.0.0
+  - 2.1.6
+  - 2.2.3
 
 gemfile:
-  - gemfiles/ar30.gemfile
-  - gemfiles/ar31.gemfile
-  - gemfiles/ar32.gemfile
   - gemfiles/ar40.gemfile
+  - gemfiles/ar41.gemfile
+  - gemfiles/ar42.gemfile
