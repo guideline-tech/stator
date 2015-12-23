@@ -9,6 +9,14 @@ module Stator
       include TrackerMethods    if options[:track] == true
 
       self._stators ||= {}
+
+      unless self.abstract_class?
+        f = options[:field] || :state
+        # rescue nil since the table may not exist yet.
+        initial = self.columns_hash[f.to_s].default rescue nil
+        options = options.reverse_merge(initial: initial)
+      end
+
       machine = (self._stators[options[:namespace].to_s] ||= ::Stator::Machine.new(self, options))
 
       if block_given?
