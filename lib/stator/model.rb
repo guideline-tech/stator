@@ -39,6 +39,10 @@ module Stator
         end
       end
 
+      def in_state_at?(state, t, namespace = '')
+        machine = self._stator(namespace)
+        machine.integration(self).in_state_at?(state, t)
+      end
 
       protected
 

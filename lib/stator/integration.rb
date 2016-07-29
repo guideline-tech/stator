@@ -71,6 +71,26 @@ module Stator
       true
     end
 
+    def in_state_at?(state, t)
+      state = state.to_s
+      t = t.to_time
+
+      state_at = @record.send("#{state}_#{@machine.field}_at")
+
+      return false if state_at.nil?
+      return false if state_at > t
+
+      min_next = @machine.states.map do |s|
+        next if state == s
+        at = @record.send("#{s}_#{@machine.field}_at")
+        at && at >= state_at ? at : nil
+      end.compact.sort[0]
+
+      return true if min_next.nil?
+      return true if min_next >= t
+      false
+    end
+
 
     protected
 

@@ -102,14 +102,14 @@ module Stator
 
     def verify_state_singularity_of_transition(transition)
       transition.from_states.each do |from|
-        if other = matching_transition(from, transition.to_state)
+        if matching_transition(from, transition.to_state)
           raise "[Stator] another transition already exists which moves #{@class_name} from #{from.inspect} to #{transition.to_state.inspect}"
         end
       end
     end
 
     def verify_name_singularity_of_transition(transition)
-      if other = @transitions.detect{|other| transition.name && transition.name == other.name }
+      if @transitions.detect{|other| transition.name && transition.name == other.name }
         raise "[Stator] another transition already exists with the name of #{transition.name.inspect} in the #{@class_name} class"
       end
     end
