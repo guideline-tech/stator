@@ -116,7 +116,7 @@ module Stator
     end
 
     def likely_state_at(t)
-      @machine.states.reverse.detect{|s| in_state_at?(t) }
+      @machine.states.reverse.detect{|s| in_state_at?(s,t) }
     end
 
 
