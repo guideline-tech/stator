@@ -77,18 +77,46 @@ module Stator
 
       state_at = @record.send("#{state}_#{@machine.field}_at")
 
+      # if we've never been in the state, the answer is no
       return false if state_at.nil?
+
+      # if we came into this state later in life, the answer is no
       return false if state_at > t
 
-      min_next = @machine.states.map do |s|
-        next if state == s
-        at = @record.send("#{s}_#{@machine.field}_at")
-        at && at >= state_at ? at : nil
-      end.compact.sort[0]
+      all_states = @machine.states.reverse
 
-      return true if min_next.nil?
-      return true if min_next >= t
+      # grab all the states and their timestamps that occur on or after state_at and on or before the time in question
+      later_states = all_states.map do |s|
+
+        next if state == s
+
+        at = @record.send("#{s}_#{@machine.field}_at")
+
+        next if at.nil?
+        next if at < state_at
+        next if at > t
+
+        { state: s, at: at }
+      end.compact
+
+      # if there were no states on or after the state_at, the answer is yes
+      return true if later_states.empty?
+
+      # grab the states that were present at the lowest timestamp
+      later_groups = later_states.group_by{|s| s[:at] }
+      later_group_key = later_groups.keys.sort[0]
+      later_states = later_groups[later_group_key]
+
+      # if the lowest timestamp is the same as the state's timestamp, evaluate based on state index
+      if later_states[0][:at] == state_at
+        return all_states.index(state) < all_states.index(later_states[0][:state])
+      end
+
       false
+    end
+
+    def likely_state_at(t)
+      @machine.states.reverse.detect{|s| in_state_at?(t) }
     end
 
 
