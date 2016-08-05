@@ -44,6 +44,11 @@ module Stator
         machine.integration(self).in_state_at?(state, t)
       end
 
+      def likely_state_at(t, namespace = '')
+        machine = self._stator(namespace)
+        machine.integration(self).likely_state_at(t)
+      end
+
       protected
 
 
