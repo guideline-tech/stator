@@ -124,28 +124,20 @@ module Stator
 
     def attempt_to_track_state(state_to_track)
       return unless state_to_track
-
-      field_name = "#{state_to_track}_#{@machine.field}_at"
-
-      return unless @record.respond_to?(field_name)
-      return unless @record.respond_to?("#{field_name}=")
-
-      unless @record.send(field_name)
-        @record.send("#{field_name}=", (Time.zone || Time).now)
-      end
+      _attempt_to_track_change("#{state_to_track}_#{@machine.field}_at")
     end
 
     def attempt_to_track_state_changed_timestamp
-      return unless self.state_changed?
+      _attempt_to_track_change("#{@machine.field}_changed_at")
+    end
 
-      field_name = "#{@machine.field}_changed_at"
-
+    def _attempt_to_track_change(field_name)
       return unless @record.respond_to?(field_name)
       return unless @record.respond_to?("#{field_name}=")
+      return unless @record.send("#{field_name}").nil? || self.state_changed?
 
       @record.send("#{field_name}=", (Time.zone || Time).now)
     end
-
 
   end
 end
