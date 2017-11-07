@@ -146,13 +146,19 @@ class Farm < ActiveRecord::Base
 
   # initial state = dirty
   stator :field => 'house_state', :namespace => 'house' do
+
     transition :cleanup do
       from :dirty
       to :clean
     end
 
+    transition :ruin do
+      from any
+      to :disgusting
+    end
+
     state_alias :cleaned do
-      is_not :dirty
+      is_not :dirty, :disgusting
     end
   end
 

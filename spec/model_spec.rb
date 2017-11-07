@@ -227,10 +227,20 @@ describe Stator::Model do
       User::ACTIVE_STATES.should eql(['activated', 'hyperactivated'])
       User::INACTIVE_STATES.should eql(['pending', 'deactivated', 'semiactivated'])
 
-      u2 = User.create(:email => 'phil@example.com')
-
       User.active.to_sql.gsub('  ', ' ').should eq("SELECT users.* FROM users WHERE users.state IN ('activated', 'hyperactivated')")
       User.inactive.to_sql.gsub('  ', ' ').should eq("SELECT users.* FROM users WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
+    end
+
+    it "should evaluate inverses correctly" do
+      f = Farm.new
+      f.house_state = "dirty"
+      f.should_not be_house_cleaned
+
+      f.house_state = "disgusting"
+      f.should_not be_house_cleaned
+
+      f.house_state = "clean"
+      f.should be_house_cleaned
     end
 
     it 'should namespace aliases just like everything else' do
