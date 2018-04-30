@@ -65,6 +65,8 @@ module Stator
     end
 
     def track_transition
+      return if @machine.skip_transition_tracking
+
       self.attempt_to_track_state(self.state)
       self.attempt_to_track_state_changed_timestamp
 

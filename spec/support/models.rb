@@ -3,7 +3,7 @@ class User < ActiveRecord::Base
 
 
   # initial state = pending
-  stator do
+  stator track: true do
 
     transition :activate do
       from :pending, :semiactivated
