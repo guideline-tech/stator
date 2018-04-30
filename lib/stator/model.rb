@@ -77,6 +77,12 @@ module Stator
         end
       end
 
+      def without_state_transition_tracking(namespace = '')
+        self._stator(namespace).without_transition_tracking do
+          yield
+        end
+      end
+
       protected
 
       def _stator_validate_transition

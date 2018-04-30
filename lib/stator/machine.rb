@@ -8,6 +8,7 @@ module Stator
     attr_reader :states
     attr_reader :namespace
     attr_reader :skip_validations
+    attr_reader :skip_transition_tracking
 
 
     def initialize(klass, options = {})
@@ -91,6 +92,14 @@ module Stator
       yield
     ensure
       @skip_validations = was
+    end
+
+    def without_transition_tracking
+      was = @skip_transition_tracking
+      @skip_transition_tracking = true
+      yield
+    ensure
+      @skip_transition_tracking = was
     end
 
     protected

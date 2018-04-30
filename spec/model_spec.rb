@@ -141,6 +141,22 @@ describe Stator::Model do
     end
   end
 
+  it 'should skip tracking timestamps if opted out of' do
+    u = User.new
+    u.email = 'doug@example.com'
+
+    u.without_state_transition_tracking do
+      u.semiactivate!
+      u.state.should eql('semiactivated')
+      u.semiactivated_state_at.should be_nil
+    end
+
+    # Make sure that tracking is ensured back to
+    # original value
+    u.activate!
+    u.activated_state_at.should_not be_nil
+  end
+
   describe 'helper methods' do
 
     it 'should answer the question of whether the state is currently the one invoked' do
