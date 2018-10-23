@@ -221,8 +221,10 @@ describe Stator::Model do
 
     it 'should prepend the setting of the timestamp so other callbacks can use it' do
       u = User.new
+      u.email = 'doug@example.com'
+
       u.tagged_at.should be_nil
-      u.semiactivate
+      u.semiactivate!
 
       u.semiactivated_state_at.should_not be_nil
       u.tagged_at.should_not be_nil
