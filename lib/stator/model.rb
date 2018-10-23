@@ -35,7 +35,7 @@ module Stator
 
       def self.included(base)
         base.class_eval do
-          before_validation :_stator_track_transition, prepend: true
+          before_save :_stator_track_transition, prepend: true
         end
       end
 
@@ -53,7 +53,6 @@ module Stator
 
 
       def _stator_track_transition
-
         self._stators.each do |namespace, machine|
           machine.integration(self).track_transition
         end

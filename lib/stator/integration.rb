@@ -10,9 +10,6 @@ module Stator
       @record  = record
     end
 
-
-
-
     def state=(new_value)
       @record.send("#{@machine.field}=",  new_value)
     end
@@ -20,7 +17,6 @@ module Stator
     def state
       @record.send(@machine.field)
     end
-
 
     def state_was(use_previous = false)
       if use_previous
@@ -30,7 +26,6 @@ module Stator
       end
     end
 
-
     def state_changed?(use_previous = false)
       if use_previous
         !!@record.previous_changes[@machine.field.to_s]
@@ -38,8 +33,6 @@ module Stator
         @record.send("#{@machine.field}_changed?")
       end
     end
-
-
 
     def validate_transition
       return unless self.state_changed?
@@ -120,7 +113,6 @@ module Stator
     def likely_state_at(t)
       @machine.states.reverse.detect{|s| in_state_at?(s,t) }
     end
-
 
     protected
 
