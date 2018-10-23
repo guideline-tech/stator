@@ -1,6 +1,7 @@
 class User < ActiveRecord::Base
   extend Stator::Model
 
+  before_validation :set_tagged_at
 
   # initial state = pending
   stator track: true do
@@ -85,6 +86,9 @@ class User < ActiveRecord::Base
     true
   end
 
+  def set_tagged_at
+    self.tagged_at = self.semiactivated_state_at
+  end
 end
 
 class Animal < ActiveRecord::Base
