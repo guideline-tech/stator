@@ -1,7 +1,7 @@
 class User < ActiveRecord::Base
   extend Stator::Model
 
-  before_save :set_tagged_at
+  before_validation :set_tagged_at
 
   # initial state = pending
   stator track: true do
