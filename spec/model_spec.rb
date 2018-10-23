@@ -219,6 +219,15 @@ describe Stator::Model do
 
     end
 
+    it 'should prepend the setting of the timestamp so other callbacks can use it' do
+      u = User.new
+      u.tagged_at.should be_nil
+      u.semiactivate
+
+      u.semiactivated_state_at.should_not be_nil
+      u.tagged_at.should_not be_nil
+    end
+
   end
 
   describe 'aliasing' do

@@ -3,6 +3,7 @@ ActiveRecord::Schema.define(:version => 20130628161227) do
   create_table "users", :force => true do |t|
     t.string   "name"
     t.string   "email"
+    t.datetime "tagged_at"
     t.string   "state",                                 :default => 'pending'
     t.boolean  "activated",                             :default => true
     t.datetime "created_at",                            :null => false
