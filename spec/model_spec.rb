@@ -293,6 +293,11 @@ describe Stator::Model do
       (!!defined?(User::ICED_TEA_STATES)).should eql(false)
       User.should_not respond_to(:iced_tea)
     end
+
+    it 'should determine the full list of states correctly' do
+      states = User._stator("").states
+      states.should eql(["pending", "activated", "deactivated", "semiactivated", "hyperactivated"])
+    end
   end
 
 end

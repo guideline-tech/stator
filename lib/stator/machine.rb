@@ -16,7 +16,7 @@ module Stator
       @field         = options[:field] || :state
       @namespace     = options[:namespace] || nil
 
-      @initial_state = options[:initial]
+      @initial_state = options[:initial] && options[:initial].to_s
 
       @transitions      = []
       @aliases          = []

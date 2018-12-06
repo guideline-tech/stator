@@ -3,8 +3,7 @@ class User < ActiveRecord::Base
 
   before_save :set_tagged_at
 
-  # initial state = pending
-  stator track: true do
+  stator track: true, initial: :pending do
 
     transition :activate do
       from :pending, :semiactivated
