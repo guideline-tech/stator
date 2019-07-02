@@ -1,7 +1,7 @@
 module Stator
   MAJOR       = 0
-  MINOR       = 2
-  PATCH       = 2
+  MINOR       = 3
+  PATCH       = 7
   PRERELEASE  = nil
 
   VERSION = [MAJOR, MINOR, PATCH, PRERELEASE].compact.join('.')

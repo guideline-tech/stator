@@ -42,7 +42,7 @@ module Stator
     end
 
     def conditional(options = {}, &block)
-      klass.instance_exec(conditional_string(options), &block)
+      klass.instance_exec(conditional_block(options), &block)
     end
 
     def any
@@ -63,19 +63,24 @@ module Stator
       @callbacks[kind] || []
     end
 
-    def conditional_string(options = {})
+    def conditional_block(options = {})
       options[:use_previous] ||= false
-      %Q{
-          (
-            self._stator(#{@namespace.inspect}).integration(self).state_changed?(#{options[:use_previous].inspect})
-          ) && (
-            #{@froms.inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state_was(#{options[:use_previous].inspect})) ||
-            #{@froms.inspect}.include?(::Stator::Transition::ANY)
-          ) && (
-            self._stator(#{@namespace.inspect}).integration(self).state == #{@to.inspect} ||
-            #{@to.inspect} == ::Stator::Transition::ANY
-          )
-        }
+
+      _namespace = @namespace
+      _froms     = @froms
+      _to        = @to
+
+      Proc.new do
+        (
+          self._stator(_namespace).integration(self).state_changed?(options[:use_previous])
+        ) && (
+          _froms.include?(self._stator(_namespace).integration(self).state_was(options[:use_previous])) ||
+          _froms.include?(::Stator::Transition::ANY)
+        ) && (
+          self._stator(_namespace).integration(self).state == _to ||
+          _to == ::Stator::Transition::ANY
+        )
+      end
     end
 
     def generate_methods

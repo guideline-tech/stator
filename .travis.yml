@@ -9,7 +9,8 @@ gemfile:
   - gemfiles/ar40.gemfile
   - gemfiles/ar41.gemfile
   - gemfiles/ar42.gemfile
+  - gemfiles/ar52.gemfile
 
 matrix:
   allow_failures:
-    - gemfile: gemfiles/ar42.gemfile
+    - gemfile: gemfiles/ar52.gemfile

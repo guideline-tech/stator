@@ -67,7 +67,9 @@ module Stator
     end
 
     def conditional(*states, &block)
-      klass.instance_exec("#{states.map(&:to_s).inspect}.include?(self._stator(#{@namespace.inspect}).integration(self).state)", &block)
+      _namespace = @namespace
+
+      klass.instance_exec(proc { states.map(&:to_s).include?(self._stator(_namespace).integration(self).state) }, &block)
     end
 
     def matching_transition(from, to)

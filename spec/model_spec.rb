@@ -36,7 +36,9 @@ describe Stator::Model do
 
   it 'should ensure a valid state transition when given an illegal state based on the current state' do
     u = User.new
-    u.stub(:new_record?).and_return(false)
+
+    allow(u).to receive(:new_record?).and_return(false)
+
     u.state = 'hyperactivated'
 
     u.should_not be_valid
