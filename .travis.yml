@@ -14,7 +14,14 @@ gemfile:
 
 matrix:
   allow_failures:
-    - rvm: 2.4.5
+    - gemfile: gemfiles/ar52.gemfile
+
+  exclude:
+    - rvm: 2.0.0
       gemfile: gemfiles/ar52.gemfile
 
-    - gemfile: gemfiles/ar42.gemfile
+    - rvm: 2.1.6
+      gemfile: gemfiles/ar52.gemfile
+
+    - rvm: 2.2.3
+      gemfile: gemfiles/ar52.gemfile
