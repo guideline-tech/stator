@@ -4,6 +4,7 @@ rvm:
   - 2.0.0
   - 2.1.6
   - 2.2.3
+  - 2.4.5
 
 gemfile:
   - gemfiles/ar40.gemfile
@@ -13,4 +14,7 @@ gemfile:
 
 matrix:
   allow_failures:
-    - gemfile: gemfiles/ar52.gemfile
+    - rvm: 2.4.5
+      gemfile: gemfiles/ar52.gemfile
+
+    - gemfile: gemfiles/ar42.gemfile
