@@ -1,27 +1,12 @@
 language: ruby
 
 rvm:
-  - 2.0.0
-  - 2.1.6
-  - 2.2.3
   - 2.4.5
+  - 2.5.3
 
 gemfile:
-  - gemfiles/ar40.gemfile
-  - gemfiles/ar41.gemfile
-  - gemfiles/ar42.gemfile
   - gemfiles/ar52.gemfile
 
 matrix:
   allow_failures:
     - gemfile: gemfiles/ar52.gemfile
-
-  exclude:
-    - rvm: 2.0.0
-      gemfile: gemfiles/ar52.gemfile
-
-    - rvm: 2.1.6
-      gemfile: gemfiles/ar52.gemfile
-
-    - rvm: 2.2.3
-      gemfile: gemfiles/ar52.gemfile
