@@ -1,9 +1,9 @@
 source 'https://rubygems.org'
 
 # Specify your gem's dependencies in stator.gemspec
-gem 'activerecord', '5.2.3'
+gem 'activerecord', '~> 5.2.0'
 
-gemspec
+gemspec :path => '../'
 
 gem 'rake'
 gem 'activerecord-nulldb-adapter', '~> 0.4.0', :require => false, :git => 'git@github.com:nulldb/nulldb.git'
