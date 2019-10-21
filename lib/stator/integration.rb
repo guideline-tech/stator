@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 module Stator
   class Integration
 
-    delegate :states,       :to => :@machine
-    delegate :transitions,  :to => :@machine
-    delegate :namespace,    :to => :@machine
+    delegate :states,       to: :@machine
+    delegate :transitions,  to: :@machine
+    delegate :namespace,    to: :@machine
 
     def initialize(machine, record)
       @machine = machine
@@ -11,7 +13,7 @@ module Stator
     end
 
     def state=(new_value)
-      @record.send("#{@machine.field}=",  new_value)
+      @record.send("#{@machine.field}=", new_value)
     end
 
     def state
@@ -35,11 +37,11 @@ module Stator
     end
 
     def validate_transition
-      return unless self.state_changed?
+      return unless state_changed?
       return if @machine.skip_validations
 
-      was = self.state_was
-      is  = self.state
+      was = state_was
+      is  = state
 
       if @record.new_record?
         invalid_state! unless @machine.matching_transition(::Stator::Transition::ANY, is)
@@ -48,7 +50,7 @@ module Stator
       end
     end
 
-    # todo: i18n
+    # TODO: i18n
     def invalid_state!
       @record.errors.add(@machine.field, "is not a valid state")
     end
@@ -60,8 +62,8 @@ module Stator
     def track_transition
       return if @machine.skip_transition_tracking
 
-      self.attempt_to_track_state(self.state)
-      self.attempt_to_track_state_changed_timestamp
+      attempt_to_track_state(state)
+      attempt_to_track_state_changed_timestamp
 
       true
     end
@@ -82,7 +84,6 @@ module Stator
 
       # grab all the states and their timestamps that occur on or after state_at and on or before the time in question
       later_states = all_states.map do |s|
-
         next if state == s
 
         at = @record.send("#{s}_#{@machine.field}_at")
@@ -98,8 +99,8 @@ module Stator
       return true if later_states.empty?
 
       # grab the states that were present at the lowest timestamp
-      later_groups = later_states.group_by{|s| s[:at] }
-      later_group_key = later_groups.keys.sort[0]
+      later_groups = later_states.group_by { |s| s[:at] }
+      later_group_key = later_groups.keys.min
       later_states = later_groups[later_group_key]
 
       # if the lowest timestamp is the same as the state's timestamp, evaluate based on state index
@@ -111,13 +112,14 @@ module Stator
     end
 
     def likely_state_at(t)
-      @machine.states.reverse.detect{|s| in_state_at?(s,t) }
+      @machine.states.reverse.detect { |s| in_state_at?(s, t) }
     end
 
     protected
 
     def attempt_to_track_state(state_to_track)
       return unless state_to_track
+
       _attempt_to_track_change("#{state_to_track}_#{@machine.field}_at")
     end
 
@@ -128,7 +130,8 @@ module Stator
     def _attempt_to_track_change(field_name)
       return unless @record.respond_to?(field_name)
       return unless @record.respond_to?("#{field_name}=")
-      return unless @record.send("#{field_name}").nil? || self.state_changed?
+      return unless @record.send(field_name.to_s).nil? || state_changed?
+      return if @record.send("#{field_name}_changed?")
 
       @record.send("#{field_name}=", (Time.zone || Time).now)
     end
