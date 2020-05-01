@@ -64,7 +64,7 @@ class User < ActiveRecord::Base
   end
 
   def check_email_validity
-    unless email.end_with?("example.com")
+    unless email.to_s.end_with?("example.com")
       errors.add(:email, "format needs to be example.com")
       return false
     end
