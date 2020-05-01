@@ -120,9 +120,9 @@ describe Stator::Model do
     f.should_not be_persisted
   end
 
-  it "should allow no initial state" do
+  it "should set the initial_state if nil" do
     f = Factory.new
-    f.state.should be_nil
+    f.state.should eql("planned")
 
     f.construct.should eql(true)
 
