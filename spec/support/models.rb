@@ -30,7 +30,7 @@ class User < ActiveRecord::Base
 
     transition :hyperactivate do
       from :activated
-      to :hyperactivated
+      to :hyperactivated, :scope => true, :constant => true
     end
 
     conditional :semiactivated, :activated do |condition|

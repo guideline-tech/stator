@@ -13,6 +13,7 @@ module Stator
       @full_name  = [@namespace, @name].compact.join('_') if @name
       @froms      = []
       @to         = nil
+      @to_options = {}
       @callbacks  = {}
     end
 
@@ -20,8 +21,9 @@ module Stator
       @froms |= froms.map{|f| f.try(:to_s) } # nils are ok
     end
 
-    def to(to)
+    def to(to, **options)
       @to = to.to_s
+      @to_options = options
     end
 
     def to_state
@@ -83,7 +85,39 @@ module Stator
       end
     end
 
+    def inferred_to_constant_name
+      [@namespace, @to, klass._stator(@namespace).field].compact.join('_').upcase
+    end
+
     def generate_methods
+      if @to_options[:scope]
+        name =
+          if @to_options[:scope] == true
+            [@namespace, @to].compact.join('_')
+          else
+            @to_options[:scope]
+          end
+
+        klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+          scope #{name.inspect}, lambda {
+            where(_stator(#{@namespace.inspect}).field => #{@to.inspect})
+          }
+        EV
+      end
+
+      if @to_options[:constant]
+        name =
+          if @to_options[:constant] == true
+            inferred_to_constant_name
+          else
+            @to_options[:constant].to_s.upcase
+          end
+
+        klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+          #{name} = #{@to.inspect}.freeze
+        EV
+      end
+
       klass.class_eval <<-EV, __FILE__, __LINE__ + 1
         def #{@full_name}(should_save = true)
           integration = self._stator(#{@namespace.inspect}).integration(self)

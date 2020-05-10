@@ -206,7 +206,21 @@ state_alias :active, scope: :the_active_ones, constant: :the_active_states do
 end
 ```
 
-The `opposite` method also accepts the scope and constant options, but does not yield to a block since the state definitions are inheritenly tied to the ones described in the parent state_alias block.
+The `opposite` method also accepts the scope and constant options, as does the `to` method within a transition block, but they do not yield to a block since the state definitions are inheritenly tied to the ones described in the parent state_alias block/transition state:
+
+```ruby
+# will generate a User::INACTIVE_STATES constant, User.inactive scope, and User#inactive? instance method
+state_alias :active do
+  is :activated
+  opposite :inactive, scope: true, constant: true
+end
+
+# also works in a transition block
+transition :deactivate do
+  from :activated
+  to :inactive, scope: true, constant: true
+end
+```
 
 #### TODO
 
