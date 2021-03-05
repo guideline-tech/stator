@@ -99,10 +99,6 @@ module Stator
         @_integrations[namespace]
       end
 
-      def _integrations
-        @_integrations
-      end
-
     end
   end
 end
