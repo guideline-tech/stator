@@ -35,26 +35,25 @@ module Stator
 
       def self.included(base)
         base.class_eval do
-          before_save :_stator_track_transition, prepend: true
+          before_save :_stator_maybe_track_transition, prepend: true
         end
       end
 
       def in_state_at?(state, t, namespace = '')
-        machine = self._stator(namespace)
-        machine.integration(self).in_state_at?(state, t)
+        _integration(namespace).in_state_at?(state, t)
       end
 
       def likely_state_at(t, namespace = '')
-        machine = self._stator(namespace)
-        machine.integration(self).likely_state_at(t)
+        _integration(namespace).likely_state_at(t)
       end
 
       protected
 
-
-      def _stator_track_transition
+      def _stator_maybe_track_transition
         self._stators.each do |namespace, machine|
-          machine.integration(self).track_transition
+          next unless machine.tracking_enabled?
+
+          _integration(namespace).track_transition
         end
 
         true
@@ -71,27 +70,37 @@ module Stator
       end
 
       def without_state_transition_validations(namespace = '')
-        self._stator(namespace).without_validation do
-          yield
+        _integration(namespace).without_validation do
+          yield self
         end
       end
 
       def without_state_transition_tracking(namespace = '')
-        self._stator(namespace).without_transition_tracking do
-          yield
+        _integration(namespace).without_transition_tracking do
+          yield self
         end
       end
 
       protected
 
       def _stator_validate_transition
-        self._stators.each do |namespace, machine|
-          machine.integration(self).validate_transition
+        self._stators.each_key do |namespace|
+          _integration(namespace).validate_transition
         end
       end
 
       def _stator(namespace = '')
         self.class._stator(namespace)
+      end
+
+      def _integration(namespace = '')
+        @_integrations ||= {}
+        @_integrations[namespace] ||= _stator(namespace).integration(self)
+        @_integrations[namespace]
+      end
+
+      def _integrations
+        @_integrations
       end
 
     end

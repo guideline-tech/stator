@@ -86,7 +86,7 @@ module Stator
     def generate_methods
       klass.class_eval <<-EV, __FILE__, __LINE__ + 1
         def #{@full_name}(should_save = true)
-          integration = self._stator(#{@namespace.inspect}).integration(self)
+          integration = _integration(#{@namespace.to_s.inspect})
 
           unless can_#{@full_name}?
             integration.invalid_transition!(integration.state, #{@to.inspect}) if should_save
@@ -98,7 +98,7 @@ module Stator
         end
 
         def #{@full_name}!
-          integration = self._stator(#{@namespace.inspect}).integration(self)
+          integration = _integration(#{@namespace.to_s.inspect})
 
           unless can_#{@full_name}?
             integration.invalid_transition!(integration.state, #{@to.inspect})
@@ -110,10 +110,10 @@ module Stator
         end
 
         def can_#{@full_name}?
-          machine     = self._stator(#{@namespace.inspect})
-          return true if machine.skip_validations
+          integration = _integration(#{@namespace.to_s.inspect})
+          return true if integration.skip_validations
 
-          integration = machine.integration(self)
+          machine     = self._stator(#{@namespace.to_s.inspect})
           transition  = machine.transitions.detect{|t| t.full_name.to_s == #{@full_name.inspect}.to_s }
           transition.can?(integration.state)
         end

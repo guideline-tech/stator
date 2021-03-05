@@ -160,6 +160,25 @@ describe Stator::Model do
     u.activated_state_at.should_not be_nil
   end
 
+  it "should skip tracking timestamps if opted out of with thread safety" do
+    threads = []
+    skip = User.new(email: "skip@example.com")
+    nope = User.new(email: "nope@example.com")
+
+    threads << Thread.new do
+      nope.semiactivate!
+    end
+    threads << Thread.new do
+      skip.without_state_transition_tracking do
+        skip.semiactivate!
+      end
+    end
+
+    threads.each(&:join)
+
+    nope.semiactivated_state_at.should_not be_nil
+    skip.semiactivated_state_at.should be_nil
+  end
   describe "helper methods" do
     it "should answer the question of whether the state is currently the one invoked" do
       a = Animal.new
@@ -253,6 +272,21 @@ describe Stator::Model do
 
       u.state.should eql("semiactivated")
       u.semiactivated_state_at.should eql(t)
+    end
+
+    it "should allow opting into track by namespace" do
+      z = ZooKeeper.new(name: "Doug")
+      z.employment_state.should eql("hired")
+      z.employment_fire!
+      z.fired_employment_state_at.should_not be_nil
+
+      z.employment_hire!
+      z.hired_employment_state_at.should_not be_nil
+
+      z.working_start!
+      z.started_working_state_at.should be_nil
+      z.working_end!
+      z.ended_working_state_at.should be_nil
     end
   end
 

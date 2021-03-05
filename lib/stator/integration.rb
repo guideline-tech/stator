@@ -7,6 +7,9 @@ module Stator
     delegate :transitions,  to: :@machine
     delegate :namespace,    to: :@machine
 
+    attr_reader :skip_validations
+    attr_reader :skip_transition_tracking
+
     def initialize(machine, record)
       @machine = machine
       @record  = record
@@ -38,7 +41,7 @@ module Stator
 
     def validate_transition
       return unless state_changed?
-      return if @machine.skip_validations
+      return if skip_validations
 
       was = state_was
       is  = state
@@ -60,7 +63,7 @@ module Stator
     end
 
     def track_transition
-      return if @machine.skip_transition_tracking
+      return if skip_transition_tracking
 
       attempt_to_track_state(state)
       attempt_to_track_state_changed_timestamp
@@ -113,6 +116,22 @@ module Stator
 
     def likely_state_at(t)
       @machine.states.reverse.detect { |s| in_state_at?(s, t) }
+    end
+
+    def without_validation
+      was = @skip_validations
+      @skip_validations = true
+      yield @record
+    ensure
+      @skip_validations = was
+    end
+
+    def without_transition_tracking
+      was = @skip_transition_tracking
+      @skip_transition_tracking = true
+      yield @record
+    ensure
+      @skip_transition_tracking = was
     end
 
     protected

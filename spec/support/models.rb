@@ -134,6 +134,33 @@ class Zoo < ActiveRecord::Base
   end
 end
 
+class ZooKeeper < ActiveRecord::Base
+  extend Stator::Model
+
+  stator namespace: 'employment', field: 'employment_state', track: true do
+    transition :hire do
+      from nil, :fired
+      to :hired
+    end
+
+    transition :fire do
+      from :hired
+      to :fired
+    end
+  end
+
+  stator namespace: 'working', field: 'working_state', track: false do
+    transition :start do
+      from nil, :ended
+      to :started
+    end
+
+    transition :end do
+      from :started
+      to :ended
+    end
+  end
+end
 
 class Farm < ActiveRecord::Base
   extend Stator::Model

@@ -7,16 +7,14 @@ module Stator
     attr_reader :transitions
     attr_reader :states
     attr_reader :namespace
-    attr_reader :skip_validations
-    attr_reader :skip_transition_tracking
-
 
     def initialize(klass, options = {})
-      @class_name    = klass.name
-      @field         = options[:field] || :state
-      @namespace     = options[:namespace] || nil
+      @class_name       = klass.name
+      @field            = options[:field] || :state
+      @namespace        = options[:namespace]
 
-      @initial_state = options[:initial] && options[:initial].to_s
+      @initial_state    = options[:initial] && options[:initial].to_s
+      @tracking_enabled = options[:track] || false
 
       @transitions      = []
       @aliases          = []
@@ -26,7 +24,6 @@ module Stator
       @states           = [@initial_state].compact
 
       @options       = options
-
     end
 
     def integration(record)
@@ -38,7 +35,6 @@ module Stator
     end
 
     def transition(name, &block)
-
       t = ::Stator::Transition.new(@class_name, name, @namespace)
       t.instance_eval(&block) if block_given?
 
@@ -66,6 +62,10 @@ module Stator
       end
     end
 
+    def tracking_enabled?
+      @tracking_enabled
+    end
+
     def conditional(*states, &block)
       _namespace = @namespace
 
@@ -86,22 +86,6 @@ module Stator
 
     def klass
       @class_name.constantize
-    end
-
-    def without_validation
-      was = @skip_validations
-      @skip_validations = true
-      yield
-    ensure
-      @skip_validations = was
-    end
-
-    def without_transition_tracking
-      was = @skip_transition_tracking
-      @skip_transition_tracking = true
-      yield
-    ensure
-      @skip_transition_tracking = was
     end
 
     protected
