@@ -22,6 +22,16 @@ ActiveRecord::Schema.define(:version => 20130628161227) do
     t.datetime "born_status_at"
   end
 
+  create_table "zoo_keepers", :force => true do |t|
+    t.string   "name"
+    t.string   "employment_state",                      :default => 'hired'
+    t.datetime "hired_employment_state_at"
+    t.datetime "fired_employment_state_at"
+    t.string   "working_state"
+    t.datetime "started_working_state_at"
+    t.datetime "ended_working_state_at"
+  end
+
   create_table "zoos", :force => true do |t|
     t.string   "name"
     t.string   "state",                                 :default => 'closed'

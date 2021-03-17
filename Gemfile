@@ -5,6 +5,6 @@ gem 'activerecord', '5.2.3'
 
 gemspec
 
+gem 'activerecord-nulldb-adapter', '~> 0.4.0', require: false
 gem 'rake'
-gem 'activerecord-nulldb-adapter', '~> 0.4.0', :require => false, :git => 'git@github.com:nulldb/nulldb.git'
 gem 'rspec'
