@@ -166,10 +166,12 @@ describe Stator::Model do
     nope = User.new(email: "nope@example.com")
 
     threads << Thread.new do
+      sleep 0.5
       nope.semiactivate!
     end
     threads << Thread.new do
       skip.without_state_transition_tracking do
+        sleep 1
         skip.semiactivate!
       end
     end
