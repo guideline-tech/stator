@@ -181,6 +181,21 @@ describe Stator::Model do
     nope.semiactivated_state_at.should_not be_nil
     skip.semiactivated_state_at.should be_nil
   end
+
+  it "should not inherit _integration cache on dup" do
+    u = User.new(email: "user@example.com")
+    u.save!
+
+    u_duped = u.dup
+
+    u.semiactivate!
+
+    u_duped_integration = u_duped.send(:_integration)
+
+    u_duped_integration.state.should_not eql(u.state)
+    u_duped_integration.instance_values["record"].should eq(u_duped)
+  end
+
   describe "helper methods" do
     it "should answer the question of whether the state is currently the one invoked" do
       a = Animal.new

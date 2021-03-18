@@ -69,6 +69,11 @@ module Stator
         end
       end
 
+      def initialize_dup(other)
+        @_integrations = {}
+        super
+      end
+
       def without_state_transition_validations(namespace = '')
         _integration(namespace).without_validation do
           yield self
