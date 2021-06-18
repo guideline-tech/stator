@@ -31,6 +31,14 @@ module Stator
       end
     end
 
+    def state_by?(state, time)
+      field_name = "#{state}_#{@machine.field}_at"
+      return false unless @record.respond_to?(field_name)
+      return false if @record.send(field_name).nil?
+      return true if time.nil?
+      @record.send(field_name) <= time
+    end
+
     def state_changed?(use_previous = false)
       if use_previous
         !!@record.previous_changes[@machine.field.to_s]
