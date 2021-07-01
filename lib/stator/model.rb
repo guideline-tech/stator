@@ -47,6 +47,10 @@ module Stator
         _integration(namespace).likely_state_at(t)
       end
 
+      def state_by?(state, t, namespace = '')
+        _integration(namespace).state_by?(state, t)
+      end
+
       protected
 
       def _stator_maybe_track_transition
