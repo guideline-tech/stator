@@ -118,7 +118,7 @@ module Stator
             integration.state == #{state.to_s.inspect}
           end
 
-          def #{method_name}_by?(time)
+          def #{method_name}_state_by?(time)
             integration = self._stator(#{@namespace.inspect}).integration(self)
             integration.state_by?(#{state.to_s.inspect}, time)
           end
