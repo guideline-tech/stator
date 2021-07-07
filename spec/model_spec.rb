@@ -311,40 +311,40 @@ describe Stator::Model do
         t = Time.now
         u = User.create!( email: "doug@example.com", activated_state_at: t)
         u.state_by?(:activated, Time.at(t.to_i + 1)).should be true
-        u.activated_by?(Time.at(t.to_i + 1)).should be true
+        u.activated_state_by?(Time.at(t.to_i + 1)).should be true
       end
 
       it "should be true when the transition is at the same time" do
         t = Time.now
         u = User.create!( email: "doug@example.com", activated_state_at: t)
         u.state_by?(:activated, t).should be true
-        u.activated_by?(t).should be true
+        u.activated_state_by?(t).should be true
       end
 
       it "should be false when the transition is later" do
         t = Time.now
         u = User.create!( email: "doug@example.com", activated_state_at: t)
         u.state_by?(:activated, Time.at(t.to_i - 1)).should be false
-        u.activated_by?(Time.at(t.to_i - 1)).should be false
+        u.activated_state_by?(Time.at(t.to_i - 1)).should be false
       end
 
       it "should be false when the transition is nil" do
         t = Time.now
         u = User.create!( email: "doug@example.com", activated_state_at: nil)
         u.state_by?(:activated, t).should be false
-        u.activated_by?(t).should be false
+        u.activated_state_by?(t).should be false
       end
 
       it "should be true when the transition is not nil and the time is nil" do
         u = User.create!( email: "doug@example.com", activated_state_at: Time.now)
         u.state_by?(:activated, nil).should be true
-        u.activated_by?(nil).should be true
+        u.activated_state_by?(nil).should be true
       end
 
       it "should be false when both are nil" do
         u = User.create!(email: "doug@example.com", activated_state_at: nil)
         u.state_by?(:activated, nil).should be false
-        u.activated_by?(nil).should be false
+        u.activated_state_by?(nil).should be false
       end
     end
   end
