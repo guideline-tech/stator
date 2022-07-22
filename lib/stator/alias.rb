@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 module Stator
   class Alias
-
     def initialize(machine, name, options = {})
       @machine    = machine
       @name       = name
@@ -33,7 +34,7 @@ module Stator
         op = @machine.state_alias(*@opposite)
 
         op.is(*@states)     if @not
-        op.is_not(*@states) if !@not
+        op.is_not(*@states) unless @not
       end
     end
 
@@ -44,7 +45,6 @@ module Stator
     end
 
     def generate_methods
-
       not_states = (@machine.states - @states)
 
       if @scope
@@ -76,6 +76,5 @@ module Stator
         end
       EV
     end
-
   end
 end
