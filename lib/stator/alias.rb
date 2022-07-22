@@ -2,11 +2,12 @@
 
 module Stator
   class Alias
+    attr_reader :machine, :name, :namespace, :attr_name, :states, :not, :opposite_args, :constant, :scope
+
     def initialize(machine, name, options = {})
       @machine    = machine
       @name       = name
-      @namespace  = @machine.namespace
-      @full_name  = [@namespace, @name].compact.join('_')
+      @namespace  = machine.namespace
       @states     = []
       @not        = false
       @opposite   = nil
@@ -14,8 +15,12 @@ module Stator
       @scope      = options[:scope]
     end
 
+    def attr_name
+      @attr_name ||= generate_attr_name
+    end
+
     def is(*args)
-      @states |= args.map(&:to_s)
+      @states |= args.map(&:to_sym)
     end
 
     def is_not(*args)
@@ -23,56 +28,73 @@ module Stator
       is(*args)
     end
 
+    alias not? not
+
     def opposite(*args)
-      @opposite = args
+      # set the incoming args for opposite as opposite
+      @opposite_args = args
     end
 
     def evaluate
       generate_methods
 
-      if @opposite
-        op = @machine.state_alias(*@opposite)
+      return if opposite_args.blank?
 
-        op.is(*@states)     if @not
-        op.is_not(*@states) unless @not
-      end
+      # this will generate the alias for the opposite
+      op = machine.state_alias(*opposite_args)
+
+      op.is(*states)     if not?
+      op.is_not(*states) unless not?
     end
 
-    protected
+    private
+
+    def current_states
+      (machine.states - states).map(&:to_sym)
+    end
 
     def inferred_constant_name
-      [@full_name.upcase, @machine.field.to_s.pluralize.upcase].join('_')
+      [attr_name.upcase, machine.field.to_s.pluralize.upcase].join('_')
+    end
+
+    def generate_attr_name
+      if namespace == Stator.default_namespace
+        name
+      else
+        [namespace, name].compact.join('_').to_sym
+      end
     end
 
     def generate_methods
-      not_states = (@machine.states - @states)
+      expected_states = (not? ? current_states : states)
 
-      if @scope
-        name = @scope == true ? @full_name : @scope
-        @machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-          scope #{name.inspect}, lambda {
-            where(_stator(#{@namespace.inspect}).field => #{(@not ? not_states : @states).inspect})
-          }
+      if scope
+        name = (scope == true ? attr_name : scope)
+
+        machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+          scope :#{name}, -> { where(_stator(#{namespace.inspect}).field => #{expected_states}) }
         EV
       end
 
-      if @constant
-        name = @constant == true ? inferred_constant_name : @constant.to_s.upcase
-        if @not
-          @machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-            #{name} = #{not_states.inspect}.freeze
+      if constant
+        name = (constant == true ? inferred_constant_name : constant.to_s.upcase)
+
+        if not?
+          machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+            #{name} = #{current_states}.freeze
           EV
         else
-          @machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-            #{name} = #{@states.inspect}.freeze
+          machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+            #{name} = #{states}.freeze
           EV
         end
       end
 
-      @machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-        def #{@full_name}?
-          integration = _stator(#{@namespace.inspect}).integration(self)
-          #{(@not ? not_states : @states).inspect}.include?(integration.state)
+      machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
+        def #{attr_name}?
+          integration = _stator_integration(:#{namespace})
+
+          #{expected_states}.include?(integration.state.to_sym)
         end
       EV
     end

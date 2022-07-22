@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 class User < ActiveRecord::Base
-  extend Stator::Model
+  include Stator::Model
 
   before_save :set_tagged_at
 
   stator track: true, initial: :pending do
+
     transition :activate do
       from :pending, :semiactivated
       to :activated
@@ -91,10 +92,10 @@ class User < ActiveRecord::Base
 end
 
 class Animal < ActiveRecord::Base
-  extend Stator::Model
+  include Stator::Model
 
   # initial state = unborn
-  stator field: :status, helpers: true, track: true do
+  stator field: :status, track: true do
     transition :birth do
       from :unborn
       to :born
@@ -105,7 +106,7 @@ class Animal < ActiveRecord::Base
 end
 
 class Zoo < ActiveRecord::Base
-  extend Stator::Model
+  include Stator::Model
 
   # initial state = closed
   stator do
@@ -132,7 +133,7 @@ class Zoo < ActiveRecord::Base
 end
 
 class ZooKeeper < ActiveRecord::Base
-  extend Stator::Model
+  include Stator::Model
 
   stator namespace: 'employment', field: 'employment_state', track: true do
     transition :hire do
@@ -160,7 +161,7 @@ class ZooKeeper < ActiveRecord::Base
 end
 
 class Farm < ActiveRecord::Base
-  extend Stator::Model
+  include Stator::Model
 
   # initial state = dirty
   stator do
@@ -171,7 +172,7 @@ class Farm < ActiveRecord::Base
   end
 
   # initial state = dirty
-  stator field: 'house_state', namespace: 'house' do
+  stator namespace: 'house', field: 'house_state' do
     transition :cleanup do
       from :dirty
       to :clean
@@ -189,7 +190,7 @@ class Farm < ActiveRecord::Base
 end
 
 class Factory < ActiveRecord::Base
-  extend Stator::Model
+  include Stator::Model
 
   # initial state = nil
   stator do
