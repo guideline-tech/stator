@@ -1,19 +1,15 @@
+# frozen_string_literal: true
+
 module Stator
   class Machine
-
-    attr_reader :initial_state
-    attr_reader :field
-    attr_reader :transition_names
-    attr_reader :transitions
-    attr_reader :states
-    attr_reader :namespace
+    attr_reader :initial_state, :field, :transition_names, :transitions, :states, :namespace
 
     def initialize(klass, options = {})
       @class_name       = klass.name
       @field            = options[:field] || :state
       @namespace        = options[:namespace]
 
-      @initial_state    = options[:initial] && options[:initial].to_s
+      @initial_state    = options[:initial]&.to_s
       @tracking_enabled = options[:track] || false
 
       @transitions      = []
@@ -23,7 +19,7 @@ module Stator
       @transition_names = []
       @states           = [@initial_state].compact
 
-      @options       = options
+      @options = options
     end
 
     def integration(record)
@@ -31,7 +27,7 @@ module Stator
     end
 
     def get_transition(name)
-      @transitions.detect{|t| t.name.to_s == name.to_s}
+      @transitions.detect { |t| t.name.to_s == name.to_s }
     end
 
     def transition(name, &block)
@@ -41,7 +37,7 @@ module Stator
       verify_transition_validity(t)
 
       @transitions      << t
-      @transition_names |= [t.full_name]  unless t.full_name.blank?
+      @transition_names |= [t.full_name]  if t.full_name.present?
       @states           |= [t.to_state]   unless t.to_state.nil?
 
       t
@@ -69,7 +65,9 @@ module Stator
     def conditional(*states, &block)
       _namespace = @namespace
 
-      klass.instance_exec(proc { states.map(&:to_s).include?(self._stator(_namespace).integration(self).state) }, &block)
+      klass.instance_exec(proc {
+                            states.map(&:to_s).include?(_stator(_namespace).integration(self).state)
+                          }, &block)
     end
 
     def matching_transition(from, to)
@@ -104,13 +102,13 @@ module Stator
     end
 
     def verify_name_singularity_of_transition(transition)
-      if @transitions.detect{|other| transition.name && transition.name == other.name }
+      if @transitions.detect { |other| transition.name && transition.name == other.name }
         raise "[Stator] another transition already exists with the name of #{transition.name.inspect} in the #{@class_name} class"
       end
     end
 
     def generate_methods
-      self.states.each do |state|
+      states.each do |state|
         method_name = [@namespace, state].compact.join('_')
         klass.class_eval <<-EV, __FILE__, __LINE__ + 1
           def #{method_name}?
@@ -125,7 +123,5 @@ module Stator
         EV
       end
     end
-
-
   end
 end

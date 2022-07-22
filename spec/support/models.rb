@@ -1,10 +1,11 @@
+# frozen_string_literal: true
+
 class User < ActiveRecord::Base
   extend Stator::Model
 
   before_save :set_tagged_at
 
   stator track: true, initial: :pending do
-
     transition :activate do
       from :pending, :semiactivated
       to :activated
@@ -15,7 +16,7 @@ class User < ActiveRecord::Base
       to :deactivated
 
       conditional do |condition|
-        before_save :set_deactivated, :if => condition
+        before_save :set_deactivated, if: condition
       end
     end
 
@@ -24,7 +25,7 @@ class User < ActiveRecord::Base
       to :semiactivated
 
       conditional do |condition|
-        validate :check_email_validity, :if => condition
+        validate :check_email_validity, if: condition
       end
     end
 
@@ -34,19 +35,18 @@ class User < ActiveRecord::Base
     end
 
     conditional :semiactivated, :activated do |condition|
-      validate :check_email_presence, :if => condition
+      validate :check_email_presence, if: condition
     end
 
-    state_alias :active, :constant => true, :scope => true do
+    state_alias :active, constant: true, scope: true do
       is :activated, :hyperactivated
-      opposite :inactive, :constant => true, :scope => true
+      opposite :inactive, constant: true, scope: true
     end
 
-    state_alias :luke_warm, :constant => :luke_warmers, :scope => :luke_warmers do
+    state_alias :luke_warm, constant: :luke_warmers, scope: :luke_warmers do
       is :semiactivated
       opposite :iced_tea
     end
-
   end
 
   validate :email_is_right_length
@@ -54,8 +54,8 @@ class User < ActiveRecord::Base
   protected
 
   def check_email_presence
-    unless self.email.present?
-      self.errors.add(:email, 'needs to be present')
+    if email.nil? || email.empty?
+      errors.add(:email, 'needs to be present')
       return false
     end
 
@@ -63,8 +63,8 @@ class User < ActiveRecord::Base
   end
 
   def check_email_validity
-    unless self.email.to_s =~ /example\.com$/
-      self.errors.add(:email, 'format needs to be example.com')
+    unless /example\.com$/.match?(email.to_s)
+      errors.add(:email, 'format needs to be example.com')
       return false
     end
 
@@ -72,8 +72,8 @@ class User < ActiveRecord::Base
   end
 
   def email_is_right_length
-    unless self.email.to_s.length == 'four@example.com'.length
-      self.errors.add(:email, 'needs to be the right length')
+    unless email.to_s.length == 'four@example.com'.length
+      errors.add(:email, 'needs to be the right length')
       return false
     end
 
@@ -86,7 +86,7 @@ class User < ActiveRecord::Base
   end
 
   def set_tagged_at
-    self.tagged_at = self.semiactivated_state_at
+    self.tagged_at = semiactivated_state_at
   end
 end
 
@@ -94,15 +94,13 @@ class Animal < ActiveRecord::Base
   extend Stator::Model
 
   # initial state = unborn
-  stator :field => :status, :helpers => true, :track => true do
-
+  stator field: :status, helpers: true, track: true do
     transition :birth do
       from :unborn
       to :born
     end
 
     state :grown_up
-
   end
 end
 
@@ -111,7 +109,6 @@ class Zoo < ActiveRecord::Base
 
   # initial state = closed
   stator do
-
     transition :open do
       from :closed
       to :opened
@@ -123,7 +120,7 @@ class Zoo < ActiveRecord::Base
     end
 
     conditional :opened do |c|
-      validate :validate_lights_are_on, :if => c
+      validate :validate_lights_are_on, if: c
     end
   end
 
@@ -168,15 +165,13 @@ class Farm < ActiveRecord::Base
   # initial state = dirty
   stator do
     transition :cleanup do
-     from :dirty
-     to :clean
+      from :dirty
+      to :clean
     end
   end
 
-
   # initial state = dirty
-  stator :field => 'house_state', :namespace => 'house' do
-
+  stator field: 'house_state', namespace: 'house' do
     transition :cleanup do
       from :dirty
       to :clean
@@ -191,7 +186,6 @@ class Farm < ActiveRecord::Base
       is_not :dirty, :disgusting
     end
   end
-
 end
 
 class Factory < ActiveRecord::Base
@@ -209,5 +203,4 @@ class Factory < ActiveRecord::Base
       to :on_the_ground
     end
   end
-
 end

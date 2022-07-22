@@ -1,10 +1,10 @@
+# frozen_string_literal: true
+
 module Stator
   class Transition
+    ANY = '__any__'.freeze
 
-    ANY = '__any__'
-
-    attr_reader :name
-    attr_reader :full_name
+    attr_reader :name, :full_name
 
     def initialize(class_name, name, namespace = nil)
       @class_name = class_name
@@ -17,7 +17,7 @@ module Stator
     end
 
     def from(*froms)
-      @froms |= froms.map{|f| f.try(:to_s) } # nils are ok
+      @froms |= froms.map {|f| f.try(:to_s) } # nils are ok
     end
 
     def to(to)
@@ -38,7 +38,7 @@ module Stator
 
     def valid?(from, to)
       can?(from) &&
-      (@to == to || @to == ANY || to == ANY)
+        (@to == to || @to == ANY || to == ANY)
     end
 
     def conditional(options = {}, &block)
@@ -50,7 +50,7 @@ module Stator
     end
 
     def evaluate
-      generate_methods unless @full_name.blank?
+      generate_methods if @full_name.present?
     end
 
     protected
@@ -70,14 +70,14 @@ module Stator
       _froms     = @froms
       _to        = @to
 
-      Proc.new do
+      proc do
         (
-          self._stator(_namespace).integration(self).state_changed?(options[:use_previous])
+          _stator(_namespace).integration(self).state_changed?(options[:use_previous])
         ) && (
-          _froms.include?(self._stator(_namespace).integration(self).state_was(options[:use_previous])) ||
+          _froms.include?(_stator(_namespace).integration(self).state_was(options[:use_previous])) ||
           _froms.include?(::Stator::Transition::ANY)
         ) && (
-          self._stator(_namespace).integration(self).state == _to ||
+          _stator(_namespace).integration(self).state == _to ||
           _to == ::Stator::Transition::ANY
         )
       end
@@ -119,6 +119,5 @@ module Stator
         end
       EV
     end
-
   end
 end
