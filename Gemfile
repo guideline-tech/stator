@@ -1,10 +1,10 @@
 source 'https://rubygems.org'
 
-# Specify your gem's dependencies in stator.gemspec
-gem 'activerecord', '5.2.3'
+gem 'activerecord', '~> 5.2.8'
 
 gemspec
 
-gem 'activerecord-nulldb-adapter', '~> 0.4.0', require: false
+gem 'appraisal'
+gem 'activerecord-nulldb-adapter'
 gem 'rake'
 gem 'rspec'
