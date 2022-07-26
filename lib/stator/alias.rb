@@ -49,7 +49,7 @@ module Stator
 
     private
 
-    def current_states
+    def inverse_states
       (machine.states - states).map(&:to_sym)
     end
 
@@ -66,7 +66,7 @@ module Stator
     end
 
     def generate_methods
-      expected_states = (not? ? current_states : states)
+      expected_states = (not? ? inverse_states : states)
 
       if scope
         name = (scope == true ? attr_name : scope)
@@ -81,7 +81,7 @@ module Stator
 
         if not?
           machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-            #{name} = #{current_states}.freeze
+            #{name} = #{inverse_states}.freeze
           EV
         else
           machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
