@@ -26,7 +26,11 @@ module Stator
       if use_previous
         record.previous_changes[machine.field].try(:[], 0).to_sym
       else
-        record.send("#{@machine.field}_was")
+        if Stator.satisfies_version?("~> 5.1")
+          record.attribute_in_database(machine.field)
+        else
+          record.send("#{machine.field}_was")
+        end
       end
     end
 
@@ -43,7 +47,11 @@ module Stator
       if use_previous
         !!record.previous_changes[machine.field.to_s]
       else
-        record.send("#{machine.field}_changed?")
+        if Stator.satisfies_version?("~> 5.1")
+          record.will_save_change_to_attribute?(machine.field)
+        else
+          record.send("#{machine.field}_changed?")
+        end
       end
     end
 
@@ -152,7 +160,11 @@ module Stator
       return unless record.respond_to?("#{field_name}=")
       return unless record.send(field_name.to_s).nil? || state_changed?
 
-      return if record.send("#{field_name}_changed?")
+      if Stator.satisfies_version?("~> 5.1")
+        return if record.will_save_change_to_attribute?(field_name)
+      else
+        return if record.send("#{field_name}_changed?")
+      end
 
       record.send("#{field_name}=", (Time.zone || Time).now)
     end
