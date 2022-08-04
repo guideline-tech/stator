@@ -2,7 +2,7 @@
 
 module Stator
   class Machine
-    attr_reader :initial_state, :field, :transitions, :states, :namespace,
+    attr_reader :states, :initial_state, :field, :transitions, :namespace,
                 :class_name, :name, :aliases, :options, :tracking_enabled, :klass
 
     def self.find_or_create(klass, *kwargs)
@@ -15,8 +15,8 @@ module Stator
       @klass ||= class_name.constantize
     end
 
-    def initialize(klass, *options)
-      options = options.first
+    def initialize(klass, *opts)
+      @options = opts.first
 
       @class_name       = klass.name
       @field            = options[:field] || :state
@@ -28,8 +28,6 @@ module Stator
 
       @transitions      = []
       @aliases          = []
-
-      @options = options
     end
 
     alias tracking_enabled? tracking_enabled
@@ -49,14 +47,13 @@ module Stator
 
         verify_transition_validity(t)
 
-        @transitions      << t
-        @states           |= [t.to_state] unless t.to_state.nil?
+        @transitions << t
+        @states      |= [t.to_state] unless t.to_state.nil?
       end
     end
 
     def state_alias(name, options = {}, &block)
       Stator::Alias.new(self, name, options).tap do |a|
-        # puts "ALIAS: #{a.inspect}"
         a.instance_eval(&block) if block_given?
         @aliases << a
       end

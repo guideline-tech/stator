@@ -17,10 +17,11 @@ module Stator
 
     class_methods do
       def stator(namespace: nil, field: :state, initial: nil, track: true, &block)
-        unless abstract_class?
+
+        unless initial.present? || abstract_class?
           # Discover the default value (usually initial) from the table...
           # but rescue nil since the table may not exist yet.
-          initial = _determine_initial_stator_state(field)
+          initial = _determine_initial_stator_state_value(field)
         end
 
         opts = { namespace: _stator_namespace(namespace), field: field.to_sym, initial: initial, track: track }
@@ -40,7 +41,7 @@ module Stator
         (namespace || Stator.default_namespace).to_sym
       end
 
-      def _determine_initial_stator_state(field)
+      def _determine_initial_stator_state_value(field)
         columns_hash[field.to_s].default.to_sym
       rescue StandardError
         nil
