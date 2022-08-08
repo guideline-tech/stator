@@ -9,6 +9,7 @@ module Stator
     attr_reader :skip_validations, :skip_transition_tracking, :record, :machine
 
     def initialize(machine, record)
+      @skip_validations = false
       @machine = machine
       @record  = record
       @skip_transition_tracking = false
@@ -27,11 +28,16 @@ module Stator
         record.previous_changes[machine.field].try(:[], 0).to_sym
       else
         if Stator.satisfies_version?("~> 5.1")
-          record.attribute_in_database(machine.field)
+          record.attribute_in_database(machine.field)&.to_sym
         else
-          record.send("#{machine.field}_was")
+          record.send("#{machine.field}_was")&.to_sym
         end
       end
+    end
+
+    def can_move?(from_states, to_state, use_previous: false)
+      (from_states.include?(state_was(use_previous)) || from_states.include?(Stator::ANY)) &&
+        (state == to_state || to_state == Stator::ANY)
     end
 
     def state_by?(state, time)
@@ -64,6 +70,8 @@ module Stator
       else
         invalid_transition!(state_was, state) unless machine.matching_transition(state_was, state)
       end
+
+      return true
     end
 
     # TODO: i18n
@@ -84,17 +92,16 @@ module Stator
       true
     end
 
-    def in_state_at?(state, t)
-      state = state.to_s
-      t = t.to_time
+    def in_state_at?(state, timestamp)
+      timestamp = timestamp.to_time
 
       state_at = record.send("#{state}_#{machine.field}_at")
 
       # if we've never been in the state, the answer is no
-      return false if state_at.nil?
+      return false if state_at.blank?
 
       # if we came into this state later in life, the answer is no
-      return false if state_at > t
+      return false if state_at > timestamp
 
       all_states = machine.states.reverse
 
@@ -104,7 +111,7 @@ module Stator
 
         at = record.send("#{s}_#{machine.field}_at")
 
-        next if at.nil? || at < state_at || at > t
+        next if at.nil? || at < state_at || at > timestamp
 
         { state: s, at: at }
       end

@@ -75,11 +75,7 @@ module Stator
 
       proc do
         integration = self.class._stator(_namespace).integration(self)
-
-        integration.state_changed?(options[:use_previous]) &&
-          _froms.include?(integration.state_was(options[:use_previous])) ||
-          _froms.include?(Stator::ANY) &&
-            integration.state == _to || _to == Stator::ANY
+        integration.state_changed?(options[:use_previous]) && integration.can_move?(_froms, _to, use_previous: options[:use_previous])
       end
     end
 
