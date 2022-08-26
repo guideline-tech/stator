@@ -95,7 +95,7 @@ module Stator
         def #{attr_name}?
           integration = _stator_integration(:#{namespace})
 
-          #{expected_states}.include?(integration.state.to_sym)
+          #{expected_states}.include?(integration.state&.to_sym)
         end
       EV
     end
