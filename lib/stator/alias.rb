@@ -76,17 +76,16 @@ module Stator
         EV
       end
 
-      # this constant is being written as strings because of loads of code :(
       if constant
         name = (constant == true ? inferred_constant_name : constant.to_s.upcase)
 
         if not?
           machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-            #{name} = #{inverse_states.map(&:to_s)}.freeze
+            #{name} = #{inverse_states}.freeze
           EV
         else
           machine.klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-            #{name} = #{states.map(&:to_s)}.freeze
+            #{name} = #{states}.freeze
           EV
         end
       end

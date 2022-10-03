@@ -12,7 +12,7 @@ If you've used the state_machine gem it's a pretty similar dsl. You define your 
 
 ```ruby
   class User < ActiveRecord::Base
-    include Stator::Model
+    extend Stator::Model
 
     # initial state (column default) is "unactivated"
     stator do
@@ -58,7 +58,7 @@ The intention of stator was to avoid hijacking ActiveRecord or reinvent the whee
 
 ```ruby
 class User < ActiveRecord::Base
-  include Stator::Model
+  extend Stator::Model
 
   stator field: :status, track: true do
 
@@ -126,7 +126,7 @@ You can have multiple state machines for your model:
 ```ruby
 
 class User < ActiveRecord::Base
-  include Stator::Model
+  extend Stator::Model
 
   # initial state = asleep
   stator do
@@ -175,7 +175,7 @@ To this point, we're doing ok. But how about defining inactive as well? At this 
 
 ```ruby
 class User < ActiveRecord::Base
-  include Stator::Model
+  extend Stator::Model
 
   stator do
     # forgoing state definitions...
