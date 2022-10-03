@@ -2,11 +2,13 @@
 
 module Stator
   class Integration
+
     delegate :states,       to: :@machine
     delegate :transitions,  to: :@machine
     delegate :namespace,    to: :@machine
 
-    attr_reader :skip_validations, :skip_transition_tracking
+    attr_reader :skip_validations
+    attr_reader :skip_transition_tracking
 
     def initialize(machine, record)
       @machine = machine
@@ -34,7 +36,6 @@ module Stator
       return false unless @record.respond_to?(field_name)
       return false if @record.send(field_name).nil?
       return true if time.nil?
-
       @record.send(field_name) <= time
     end
 
@@ -62,7 +63,7 @@ module Stator
 
     # TODO: i18n
     def invalid_state!
-      @record.errors.add(@machine.field, 'is not a valid state')
+      @record.errors.add(@machine.field, "is not a valid state")
     end
 
     def invalid_transition!(was, is)
@@ -114,7 +115,9 @@ module Stator
       later_states = later_groups[later_group_key]
 
       # if the lowest timestamp is the same as the state's timestamp, evaluate based on state index
-      return all_states.index(state) < all_states.index(later_states[0][:state]) if later_states[0][:at] == state_at
+      if later_states[0][:at] == state_at
+        return all_states.index(state) < all_states.index(later_states[0][:state])
+      end
 
       false
     end
@@ -159,5 +162,6 @@ module Stator
 
       @record.send("#{field_name}=", (Time.zone || Time).now)
     end
+
   end
 end

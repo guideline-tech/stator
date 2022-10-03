@@ -1,104 +1,104 @@
 # frozen_string_literal: true
 
-require 'spec_helper'
+require "spec_helper"
 
 describe Stator::Model do
-  it 'should set the default state after initialization' do
+  it "should set the default state after initialization" do
     u = User.new
-    u.state.should eql('pending')
+    u.state.should eql("pending")
   end
 
-  it 'should see the initial setting of the state as a change with the initial state as the previous value' do
+  it "should see the initial setting of the state as a change with the initial state as the previous value" do
     u = User.new
-    u.state = 'activated'
-    u.state_was.should eql('pending')
+    u.state = "activated"
+    u.state_was.should eql("pending")
   end
 
-  it 'should not obstruct normal validations' do
+  it "should not obstruct normal validations" do
     u = User.new
     u.should_not be_valid
     u.errors[:email].grep(/length/).should_not be_empty
   end
 
-  it 'should ensure a valid state transition when given a bogus state' do
+  it "should ensure a valid state transition when given a bogus state" do
     u = User.new
-    u.state = 'anythingelse'
+    u.state = "anythingelse"
 
     u.should_not be_valid
-    u.errors[:state].should eql(['is not a valid state'])
+    u.errors[:state].should eql(["is not a valid state"])
   end
 
-  it 'should allow creation at any state' do
-    u = User.new(email: 'doug@example.com')
-    u.state = 'hyperactivated'
+  it "should allow creation at any state" do
+    u = User.new(email: "doug@example.com")
+    u.state = "hyperactivated"
 
     u.should be_valid
   end
 
-  it 'should ensure a valid state transition when given an illegal state based on the current state' do
+  it "should ensure a valid state transition when given an illegal state based on the current state" do
     u = User.new
 
     allow(u).to receive(:new_record?).and_return(false)
 
-    u.state = 'hyperactivated'
+    u.state = "hyperactivated"
 
     u.should_not be_valid
     u.errors[:state].should_not be_empty
   end
 
-  it 'should not allow a transition that is currently in a `to` state' do
-    u = User.new(email: 'fred@example.com')
+  it "should not allow a transition that is currently in a `to` state" do
+    u = User.new(email: "fred@example.com")
     u.activate!
     u.hyperactivate!
 
     lambda {
       u.hyperactivate!
-    }.should raise_error(/cannot transition to "hyperactivated" from "hyperactivated"/)
+    }.should raise_error(/cannot transition to \"hyperactivated\" from \"hyperactivated\"/)
   end
 
-  it 'should run conditional validations' do
+  it "should run conditional validations" do
     u = User.new
-    u.state = 'semiactivated'
+    u.state = "semiactivated"
     u.should_not be_valid
 
     u.errors[:state].should be_empty
     u.errors[:email].grep(/format/).should_not be_empty
   end
 
-  it 'should invoke callbacks' do
-    u = User.new(activated: true, email: 'doug@example.com', name: 'doug')
+  it "should invoke callbacks" do
+    u = User.new(activated: true, email: "doug@example.com", name: "doug")
     u.activated.should == true
 
     u.deactivate
 
     u.activated.should == false
-    u.state.should eql('deactivated')
+    u.state.should eql("deactivated")
     u.activated_state_at.should be_nil
     u.should be_persisted
   end
 
-  it 'should blow up if the record is invalid and a bang method is used' do
-    u = User.new(email: 'doug@other.com', name: 'doug')
+  it "should blow up if the record is invalid and a bang method is used" do
+    u = User.new(email: "doug@other.com", name: "doug")
     lambda {
       u.activate!
     }.should raise_error(ActiveRecord::RecordInvalid)
   end
 
-  it 'should allow for other fields to be used other than state' do
+  it "should allow for other fields to be used other than state" do
     a = Animal.new
     a.should be_valid
 
     a.birth!
   end
 
-  it 'should create implicit transitions for state declarations' do
+  it "should create implicit transitions for state declarations" do
     a = Animal.new
     a.should_not be_grown_up
-    a.status = 'grown_up'
+    a.status = "grown_up"
     a.save
   end
 
-  it 'should allow multiple machines in the same model' do
+  it "should allow multiple machines in the same model" do
     f = Farm.new
     f.should be_dirty
     f.should be_house_dirty
@@ -113,30 +113,30 @@ describe Stator::Model do
     f.should_not be_house_dirty
   end
 
-  it 'should allow saving to be skipped' do
+  it "should allow saving to be skipped" do
     f = Farm.new
     f.cleanup(false)
 
     f.should_not be_persisted
   end
 
-  it 'should allow no initial state' do
+  it "should allow no initial state" do
     f = Factory.new
     f.state.should be_nil
 
     f.construct.should eql(true)
 
-    f.state.should eql('constructed')
+    f.state.should eql("constructed")
   end
 
-  it 'should allow any transition if validations are opted out of' do
+  it "should allow any transition if validations are opted out of" do
     u = User.new
-    u.email = 'doug@example.com'
+    u.email = "doug@example.com"
 
     u.can_hyperactivate?.should eql(false)
     u.hyperactivate.should eql(false)
 
-    u.state.should eql('pending')
+    u.state.should eql("pending")
 
     u.without_state_transition_validations do
       u.can_hyperactivate?.should eql(true)
@@ -144,13 +144,13 @@ describe Stator::Model do
     end
   end
 
-  it 'should skip tracking timestamps if opted out of' do
+  it "should skip tracking timestamps if opted out of" do
     u = User.new
-    u.email = 'doug@example.com'
+    u.email = "doug@example.com"
 
     u.without_state_transition_tracking do
       u.semiactivate!
-      u.state.should eql('semiactivated')
+      u.state.should eql("semiactivated")
       u.semiactivated_state_at.should be_nil
     end
 
@@ -160,10 +160,10 @@ describe Stator::Model do
     u.activated_state_at.should_not be_nil
   end
 
-  it 'should skip tracking timestamps if opted out of with thread safety' do
+  it "should skip tracking timestamps if opted out of with thread safety" do
     threads = []
-    skip = User.new(email: 'skip@example.com')
-    nope = User.new(email: 'nope@example.com')
+    skip = User.new(email: "skip@example.com")
+    nope = User.new(email: "nope@example.com")
 
     threads << Thread.new do
       sleep 0.5
@@ -182,8 +182,8 @@ describe Stator::Model do
     skip.semiactivated_state_at.should be_nil
   end
 
-  it 'should not inherit _integration cache on dup' do
-    u = User.new(email: 'user@example.com')
+  it "should not inherit _integration cache on dup" do
+    u = User.new(email: "user@example.com")
     u.save!
 
     u_duped = u.dup
@@ -193,11 +193,11 @@ describe Stator::Model do
     u_duped_integration = u_duped.send(:_integration)
 
     u_duped_integration.state.should_not eql(u.state)
-    u_duped_integration.instance_values['record'].should eq(u_duped)
+    u_duped_integration.instance_values["record"].should eq(u_duped)
   end
 
-  describe 'helper methods' do
-    it 'should answer the question of whether the state is currently the one invoked' do
+  describe "helper methods" do
+    it "should answer the question of whether the state is currently the one invoked" do
       a = Animal.new
       a.should be_unborn
       a.should_not be_born
@@ -208,7 +208,7 @@ describe Stator::Model do
       a.should_not be_unborn
     end
 
-    it 'should determine if it can validly execute a transition' do
+    it "should determine if it can validly execute a transition" do
       a = Animal.new
       a.can_birth?.should eql(true)
 
@@ -218,18 +218,18 @@ describe Stator::Model do
     end
   end
 
-  describe 'tracker methods' do
+  describe "tracker methods" do
     before do
-      Time.zone = 'Eastern Time (US & Canada)'
+      Time.zone = "Eastern Time (US & Canada)"
     end
 
-    it 'should store the initial state timestamp when the record is created' do
+    it "should store the initial state timestamp when the record is created" do
       a = Animal.new
       a.save
       a.unborn_status_at.should be_within(1).of(Time.zone.now)
     end
 
-    it 'should store when a record changed state for the first time' do
+    it "should store when a record changed state for the first time" do
       a = Animal.new
       a.unborn_status_at.should be_nil
       a.born_status_at.should be_nil
@@ -238,7 +238,7 @@ describe Stator::Model do
       a.born_status_at.should be_within(1).of(Time.zone.now)
     end
 
-    it 'should store when a record change states' do
+    it "should store when a record change states" do
       a = Animal.new
       a.status_changed_at.should be_nil
 
@@ -248,15 +248,15 @@ describe Stator::Model do
 
       previous_status_changed_at = a.status_changed_at
 
-      a.name = 'new name'
+      a.name = "new name"
       a.save
 
       a.status_changed_at.should eql(previous_status_changed_at)
     end
 
-    it 'should prepend the setting of the timestamp so other callbacks can use it' do
+    it "should prepend the setting of the timestamp so other callbacks can use it" do
       u = User.new
-      u.email = 'doug@example.com'
+      u.email = "doug@example.com"
 
       u.tagged_at.should be_nil
       u.semiactivate!
@@ -265,35 +265,35 @@ describe Stator::Model do
       u.tagged_at.should_not be_nil
     end
 
-    it 'should respect the timestamp if explicitly provided' do
-      t = Time.zone.at(Time.now.to_i - 3600)
+    it "should respect the timestamp if explicitly provided" do
+      t = Time.at(Time.now.to_i - 3600)
 
       u = User.new
-      u.email = 'doug@example.com'
-      u.state = 'semiactivated'
+      u.email = "doug@example.com"
+      u.state = "semiactivated"
       u.semiactivated_state_at = t
       u.save!
 
-      u.state.should eql('semiactivated')
+      u.state.should eql("semiactivated")
       u.semiactivated_state_at.should eql(t)
     end
 
-    it 'should respect the timestamp if explicitly provided via create' do
-      t = Time.zone.at(Time.now.to_i - 3600)
+    it "should respect the timestamp if explicitly provided via create" do
+      t = Time.at(Time.now.to_i - 3600)
 
       u = User.create!(
-        email: 'doug@example.com',
-        state: 'semiactivated',
+        email: "doug@example.com",
+        state: "semiactivated",
         semiactivated_state_at: t
       )
 
-      u.state.should eql('semiactivated')
+      u.state.should eql("semiactivated")
       u.semiactivated_state_at.should eql(t)
     end
 
-    it 'should allow opting into track by namespace' do
-      z = ZooKeeper.new(name: 'Doug')
-      z.employment_state.should eql('hired')
+    it "should allow opting into track by namespace" do
+      z = ZooKeeper.new(name: "Doug")
+      z.employment_state.should eql("hired")
       z.employment_fire!
       z.fired_employment_state_at.should_not be_nil
 
@@ -306,52 +306,52 @@ describe Stator::Model do
       z.ended_working_state_at.should be_nil
     end
 
-    describe '#state_by?' do
-      it 'should be true when the transition is earlier' do
-        t = Time.zone.now
-        u = User.create!(email: 'doug@example.com', activated_state_at: t)
-        u.state_by?(:activated, Time.zone.at(t.to_i + 1)).should be true
-        u.activated_state_by?(Time.zone.at(t.to_i + 1)).should be true
+    describe "#state_by?" do
+      it "should be true when the transition is earlier" do
+        t = Time.now
+        u = User.create!( email: "doug@example.com", activated_state_at: t)
+        u.state_by?(:activated, Time.at(t.to_i + 1)).should be true
+        u.activated_state_by?(Time.at(t.to_i + 1)).should be true
       end
 
-      it 'should be true when the transition is at the same time' do
-        t = Time.zone.now
-        u = User.create!(email: 'doug@example.com', activated_state_at: t)
+      it "should be true when the transition is at the same time" do
+        t = Time.now
+        u = User.create!( email: "doug@example.com", activated_state_at: t)
         u.state_by?(:activated, t).should be true
         u.activated_state_by?(t).should be true
       end
 
-      it 'should be false when the transition is later' do
-        t = Time.zone.now
-        u = User.create!(email: 'doug@example.com', activated_state_at: t)
-        u.state_by?(:activated, Time.zone.at(t.to_i - 1)).should be false
-        u.activated_state_by?(Time.zone.at(t.to_i - 1)).should be false
+      it "should be false when the transition is later" do
+        t = Time.now
+        u = User.create!( email: "doug@example.com", activated_state_at: t)
+        u.state_by?(:activated, Time.at(t.to_i - 1)).should be false
+        u.activated_state_by?(Time.at(t.to_i - 1)).should be false
       end
 
-      it 'should be false when the transition is nil' do
-        t = Time.zone.now
-        u = User.create!(email: 'doug@example.com', activated_state_at: nil)
+      it "should be false when the transition is nil" do
+        t = Time.now
+        u = User.create!( email: "doug@example.com", activated_state_at: nil)
         u.state_by?(:activated, t).should be false
         u.activated_state_by?(t).should be false
       end
 
-      it 'should be true when the transition is not nil and the time is nil' do
-        u = User.create!(email: 'doug@example.com', activated_state_at: Time.zone.now)
+      it "should be true when the transition is not nil and the time is nil" do
+        u = User.create!( email: "doug@example.com", activated_state_at: Time.now)
         u.state_by?(:activated, nil).should be true
         u.activated_state_by?(nil).should be true
       end
 
-      it 'should be false when both are nil' do
-        u = User.create!(email: 'doug@example.com', activated_state_at: nil)
+      it "should be false when both are nil" do
+        u = User.create!(email: "doug@example.com", activated_state_at: nil)
         u.state_by?(:activated, nil).should be false
         u.activated_state_by?(nil).should be false
       end
     end
   end
 
-  describe 'aliasing' do
-    it 'should allow aliasing within the dsl' do
-      u = User.new(email: 'doug@example.com')
+  describe "aliasing" do
+    it "should allow aliasing within the dsl" do
+      u = User.new(email: "doug@example.com")
       u.should respond_to(:active?)
       u.should respond_to(:inactive?)
 
@@ -371,25 +371,23 @@ describe Stator::Model do
       User::ACTIVE_STATES.should eql(%w[activated hyperactivated])
       User::INACTIVE_STATES.should eql(%w[pending deactivated semiactivated])
 
-      User.active.to_sql.gsub('  ',
-                              ' ').should eq("SELECT users.* FROM users WHERE users.state IN ('activated', 'hyperactivated')")
-      User.inactive.to_sql.gsub('  ',
-                                ' ').should eq("SELECT users.* FROM users WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
+      User.active.to_sql.gsub("  ", " ").should eq("SELECT users.* FROM users WHERE users.state IN ('activated', 'hyperactivated')")
+      User.inactive.to_sql.gsub("  ", " ").should eq("SELECT users.* FROM users WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
     end
 
-    it 'should evaluate inverses correctly' do
+    it "should evaluate inverses correctly" do
       f = Farm.new
-      f.house_state = 'dirty'
+      f.house_state = "dirty"
       f.should_not be_house_cleaned
 
-      f.house_state = 'disgusting'
+      f.house_state = "disgusting"
       f.should_not be_house_cleaned
 
-      f.house_state = 'clean'
+      f.house_state = "clean"
       f.should be_house_cleaned
     end
 
-    it 'should namespace aliases just like everything else' do
+    it "should namespace aliases just like everything else" do
       f = Farm.new
       f.should respond_to(:house_cleaned?)
 
@@ -399,22 +397,22 @@ describe Stator::Model do
       f.should be_house_cleaned
     end
 
-    it 'should allow for explicit constant and scope names to be provided' do
+    it "should allow for explicit constant and scope names to be provided" do
       User.should respond_to(:luke_warmers)
-      (!defined?(User::LUKE_WARMERS).nil?).should eql(true)
+      (!!defined?(User::LUKE_WARMERS)).should eql(true)
       u = User.new
       u.should respond_to(:luke_warm?)
     end
 
-    it 'should not create constants or scopes by default' do
+    it "should not create constants or scopes by default" do
       u = User.new
       u.should respond_to(:iced_tea?)
-      (!defined?(User::ICED_TEA_STATES).nil?).should eql(false)
+      (!!defined?(User::ICED_TEA_STATES)).should eql(false)
       User.should_not respond_to(:iced_tea)
     end
 
-    it 'should determine the full list of states correctly' do
-      states = User._stator('').states
+    it "should determine the full list of states correctly" do
+      states = User._stator("").states
       states.should eql(%w[pending activated deactivated semiactivated hyperactivated])
     end
   end

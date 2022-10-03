@@ -1,23 +1,19 @@
-# frozen_string_literal: true
-
 module Stator
   module Model
+
     def stator(options = {}, &block)
+
       class_attribute :_stators unless respond_to?(:_stators)
 
-      include InstanceMethods   unless included_modules.include?(InstanceMethods)
+      include InstanceMethods   unless self.included_modules.include?(InstanceMethods)
       include TrackerMethods    if options[:track] == true
 
       self._stators ||= {}
 
-      unless abstract_class?
+      unless self.abstract_class?
         f = options[:field] || :state
         # rescue nil since the table may not exist yet.
-        initial = begin
-          columns_hash[f.to_s].default
-        rescue StandardError
-          nil
-        end
+        initial = self.columns_hash[f.to_s].default rescue nil
         options = options.merge(initial: initial) if initial
       end
 
@@ -36,6 +32,7 @@ module Stator
     end
 
     module TrackerMethods
+
       def self.included(base)
         base.class_eval do
           before_save :_stator_maybe_track_transition, prepend: true
@@ -65,9 +62,11 @@ module Stator
 
         true
       end
+
     end
 
     module InstanceMethods
+
       def self.included(base)
         base.class_eval do
           validate :_stator_validate_transition
@@ -108,6 +107,7 @@ module Stator
         @_integrations[namespace] ||= _stator(namespace).integration(self)
         @_integrations[namespace]
       end
+
     end
   end
 end
