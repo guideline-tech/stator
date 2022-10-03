@@ -2,117 +2,112 @@
 
 module Stator
   module Model
-    extend ActiveSupport::Concern
+    def stator(options = {}, &block)
+      class_attribute :_stators unless respond_to?(:_stators)
 
-    included do
-      class_attribute :_stators
-      attr_accessor :_stator_integrations
-
-      validate :_stator_validate_transition
+      include InstanceMethods   unless included_modules.include?(InstanceMethods)
+      include TrackerMethods    if options[:track] == true
 
       self._stators ||= {}
 
-      before_save :_stator_maybe_track_transition, prepend: true
+      unless abstract_class?
+        f = options[:field] || :state
+        # rescue nil since the table may not exist yet.
+        initial = begin
+          columns_hash[f.to_s].default
+        rescue StandardError
+          nil
+        end
+        options = options.merge(initial: initial) if initial
+      end
+
+      machine = (self._stators[options[:namespace].to_s] ||= ::Stator::Machine.new(self, options))
+
+      if block_given?
+        machine.instance_eval(&block)
+        machine.evaluate
+      end
+
+      machine
     end
 
-    class_methods do
-      def stator(namespace: nil, field: :state, initial: nil, track: true, &block)
-        unless abstract_class?
-          # Discover the default value (usually initial) from the table...
-          # but rescue nil since the table may not exist yet.
-          initial = _determine_initial_stator_state(field)
+    def _stator(namespace)
+      self._stators[namespace.to_s]
+    end
+
+    module TrackerMethods
+      def self.included(base)
+        base.class_eval do
+          before_save :_stator_maybe_track_transition, prepend: true
+        end
+      end
+
+      def in_state_at?(state, t, namespace = '')
+        _integration(namespace).in_state_at?(state, t)
+      end
+
+      def likely_state_at(t, namespace = '')
+        _integration(namespace).likely_state_at(t)
+      end
+
+      def state_by?(state, t, namespace = '')
+        _integration(namespace).state_by?(state, t)
+      end
+
+      protected
+
+      def _stator_maybe_track_transition
+        self._stators.each do |namespace, machine|
+          next unless machine.tracking_enabled?
+
+          _integration(namespace).track_transition
         end
 
-        opts = { namespace: _stator_namespace(namespace), field: field.to_sym, initial: initial, track: track }
+        true
+      end
+    end
 
-        Stator::Machine.find_or_create(self, **opts).tap do |machine|
-          machine.evaluate_dsl(&block) if block_given?
+    module InstanceMethods
+      def self.included(base)
+        base.class_eval do
+          validate :_stator_validate_transition
         end
       end
 
-      def _stator(namespace)
-        self._stators[_stator_namespace(namespace)]
+      def initialize_dup(other)
+        @_integrations = {}
+        super
       end
 
-      def _stator_namespace(namespace = nil)
-        namespace = nil if namespace.blank?
-
-        (namespace || Stator.default_namespace).to_sym
+      def without_state_transition_validations(namespace = '')
+        _integration(namespace).without_validation do
+          yield self
+        end
       end
 
-      def _determine_initial_stator_state(field)
-        columns_hash[field.to_s].default.to_sym
-      rescue StandardError
-        nil
-      end
-    end
-
-    def initialize_dup(other)
-      @_stator_integrations = {}
-      super
-    end
-
-    def without_state_transition_validations(namespace = '')
-      _stator_integration(namespace).without_validation do
-        yield self
-      end
-    end
-
-    def without_state_transition_tracking(namespace = '')
-      _stator_integration(namespace).without_transition_tracking do
-        yield self
-      end
-    end
-
-    def current_state
-      _stator_integration.state&.to_sym
-    end
-
-    def in_state_at?(state, t, namespace = '')
-      _stator_integration(namespace).in_state_at?(state, t)
-    end
-
-    def likely_state_at(t, namespace = '')
-      _stator_integration(namespace).likely_state_at(t)
-    end
-
-    def state_by?(state, t, namespace = '')
-      _stator_integration(namespace).state_by?(state, t)
-    end
-
-    private
-
-    # core methods
-    def _stator(namespace = nil)
-      self.class._stator(namespace)
-    end
-
-    def _stator_namespace(namespace = nil)
-      self.class._stator_namespace(namespace)
-    end
-
-    def _stator_integration(namespace = nil)
-      ns = _stator_namespace(namespace)
-
-      self._stator_integrations ||= {}
-      self._stator_integrations[ns] ||= self.class._stator(ns).integration(self)
-    end
-
-    # validation/transitional
-    def _stator_validate_transition
-      self._stators.each_key do |namespace|
-        _stator_integration(namespace).validate_transition
-      end
-    end
-
-    def _stator_maybe_track_transition
-      self._stators.each do |namespace, machine|
-        next unless machine.tracking_enabled?
-
-        _stator_integration(namespace).track_transition
+      def without_state_transition_tracking(namespace = '')
+        _integration(namespace).without_transition_tracking do
+          yield self
+        end
       end
 
-      true
+      protected
+
+      def _stator_validate_transition
+        self._stators.each_key do |namespace|
+          _integration(namespace).validate_transition
+        end
+      end
+
+      def _stator(namespace = '')
+        self.class._stator(namespace)
+      end
+
+      def _integration(namespace = '')
+        @_integrations ||= {}
+        @_integrations[namespace] ||= _stator(namespace).integration(self)
+        @_integrations[namespace]
+      end
     end
   end
 end
