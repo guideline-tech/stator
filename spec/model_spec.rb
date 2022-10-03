@@ -11,7 +11,7 @@ describe Stator::Model do
   it "should see the initial setting of the state as a change with the initial state as the previous value" do
     u = User.new
     u.state = "activated"
-    u.state_was.should eql("pending")
+    u.state_in_database.should eql("pending")
   end
 
   it "should not obstruct normal validations" do
@@ -33,6 +33,26 @@ describe Stator::Model do
     u.state = "hyperactivated"
 
     u.should be_valid
+  end
+
+  it "should work normally with active_record dirty methods" do
+    u = User.new(email: "doug@example.com")
+
+    u.will_save_change_to_state?.should_not be true
+    u.state_in_database.should eq("pending")
+    u.state_before_last_save.should be nil
+
+    u.state = "hyperactivated"
+
+    u.will_save_change_to_state?.should be true
+    u.state_in_database.should eq("pending")
+    u.state_before_last_save.should be nil
+
+    u.save!
+
+    u.will_save_change_to_state?.should_not be true
+    u.state_in_database.should eq("hyperactivated")
+    u.state_before_last_save.should eq("pending")
   end
 
   it "should ensure a valid state transition when given an illegal state based on the current state" do
@@ -75,6 +95,21 @@ describe Stator::Model do
     u.state.should eql("deactivated")
     u.activated_state_at.should be_nil
     u.should be_persisted
+  end
+
+  it "should conditionally invoke after_save callbacks when use_previous is true" do
+    u = User.new
+    u.email = "doug@example.com"
+
+    u.semiactivate!
+
+    u.state.should eql("semiactivated")
+    u.activation_notification_published.should_not be true
+
+    u.activate!
+
+    u.state.should eql("activated")
+    u.activation_notification_published.should be true
   end
 
   it "should blow up if the record is invalid and a bang method is used" do

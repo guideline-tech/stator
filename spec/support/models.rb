@@ -3,11 +3,17 @@ class User < ActiveRecord::Base
 
   before_save :set_tagged_at
 
+  attr_reader :activation_notification_published
+
   stator track: true, initial: :pending do
 
     transition :activate do
       from :pending, :semiactivated
       to :activated
+
+      conditional(use_previous: true) do |condition|
+        after_save :publish_activation_notification, :if => condition
+      end
     end
 
     transition :deactivate do
@@ -88,6 +94,13 @@ class User < ActiveRecord::Base
   def set_tagged_at
     self.tagged_at = self.semiactivated_state_at
   end
+
+  private
+
+  def publish_activation_notification
+    @activation_notification_published = true
+  end
+
 end
 
 class Animal < ActiveRecord::Base
