@@ -16,8 +16,4 @@ module Stator
   def self.default_namespace
     ENV.fetch('STATOR_NAMESPACE', :default).to_sym
   end
-
-  def self.satisfies_version?(vers)
-    ::Gem::Requirement.new(vers).satisfied_by?(::ActiveRecord.gem_version)
-  end
 end
