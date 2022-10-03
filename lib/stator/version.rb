@@ -2,9 +2,9 @@
 
 module Stator
   MAJOR       = 0
-  MINOR       = 9
+  MINOR       = 8
   PATCH       = 0
-  PRERELEASE  = "beta"
+  PRERELEASE  = nil
 
   VERSION = [MAJOR, MINOR, PATCH, PRERELEASE].compact.join('.')
 end
