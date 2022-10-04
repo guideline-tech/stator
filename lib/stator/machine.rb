@@ -1,62 +1,57 @@
-# frozen_string_literal: true
-
 module Stator
   class Machine
-    attr_reader :states, :initial_state, :field, :transitions, :namespace,
-                :class_name, :name, :aliases, :options, :tracking_enabled, :klass
 
-    def self.find_or_create(klass, *kwargs)
-      kwargs = kwargs.first
+    attr_reader :initial_state
+    attr_reader :field
+    attr_reader :transition_names
+    attr_reader :transitions
+    attr_reader :states
+    attr_reader :namespace
 
-      klass._stators[kwargs[:namespace]] ||= new(klass, **kwargs)
-    end
-
-    def klass
-      @klass ||= class_name.constantize
-    end
-
-    def initialize(klass, *opts)
-      @options = opts.first
-
+    def initialize(klass, options = {})
       @class_name       = klass.name
       @field            = options[:field] || :state
-      @namespace        = (options[:namespace] || Stator.default_namespace).to_sym
+      @namespace        = options[:namespace]
 
-      @initial_state    = options[:initial]&.to_sym
-      @states           = [initial_state].compact
+      @initial_state    = options[:initial] && options[:initial].to_s
       @tracking_enabled = options[:track] || false
 
       @transitions      = []
       @aliases          = []
-    end
 
-    alias tracking_enabled? tracking_enabled
+      # pushed out into their own variables for performance reasons (AR integration can use method missing - see the HelperMethods module)
+      @transition_names = []
+      @states           = [@initial_state].compact
 
-    def evaluate_dsl(&block)
-      instance_eval(&block)
-      evaluate
+      @options       = options
     end
 
     def integration(record)
-      Stator::Integration.new(self, record)
+      ::Stator::Integration.new(self, record)
+    end
+
+    def get_transition(name)
+      @transitions.detect{|t| t.name.to_s == name.to_s}
     end
 
     def transition(name, &block)
-      Stator::Transition.new(class_name, name, namespace).tap do |t|
-        t.instance_eval(&block) if block_given?
+      t = ::Stator::Transition.new(@class_name, name, @namespace)
+      t.instance_eval(&block) if block_given?
 
-        verify_transition_validity(t)
+      verify_transition_validity(t)
 
-        @transitions << t
-        @states      |= [t.to_state] unless t.to_state.nil?
-      end
+      @transitions      << t
+      @transition_names |= [t.full_name]  unless t.full_name.blank?
+      @states           |= [t.to_state]   unless t.to_state.nil?
+
+      t
     end
 
     def state_alias(name, options = {}, &block)
-      Stator::Alias.new(self, name, options).tap do |a|
-        a.instance_eval(&block) if block_given?
-        @aliases << a
-      end
+      a = ::Stator::Alias.new(self, name, options)
+      a.instance_eval(&block) if block_given?
+      @aliases << a
+      a
     end
 
     def state(name, &block)
@@ -67,31 +62,33 @@ module Stator
       end
     end
 
-    def conditional(*states, &block)
-      state_check = proc { states.include?(current_state) }
+    def tracking_enabled?
+      @tracking_enabled
+    end
 
-      klass.instance_exec(state_check, &block)
+    def conditional(*states, &block)
+      _namespace = @namespace
+
+      klass.instance_exec(proc { states.map(&:to_s).include?(self._stator(_namespace).integration(self).state) }, &block)
     end
 
     def matching_transition(from, to)
-      transitions.detect { |transition| transition.valid?(from, to) }
+      @transitions.detect do |transition|
+        transition.valid?(from, to)
+      end
     end
 
     def evaluate
-      transitions.each(&:evaluate)
-      aliases.each(&:evaluate)
+      @transitions.each(&:evaluate)
+      @aliases.each(&:evaluate)
       generate_methods
     end
 
-    private
-
-    def attr_name(name)
-      if namespace == Stator.default_namespace
-        name.to_sym
-      else
-        [namespace, name].compact.join('_').to_sym
-      end
+    def klass
+      @class_name.constantize
     end
+
+    protected
 
     def verify_transition_validity(transition)
       verify_state_singularity_of_transition(transition)
@@ -101,29 +98,34 @@ module Stator
     def verify_state_singularity_of_transition(transition)
       transition.from_states.each do |from|
         if matching_transition(from, transition.to_state)
-          raise "[Stator] another transition already exists which moves #{class_name} from #{from} to #{transition}"
+          raise "[Stator] another transition already exists which moves #{@class_name} from #{from.inspect} to #{transition.to_state.inspect}"
         end
       end
     end
 
     def verify_name_singularity_of_transition(transition)
-      if transitions.detect { |other| transition.name && transition.name == other.name }
-        raise "[Stator] another transition already exists with the name of #{transition.name} in the #{class_name} class"
+      if @transitions.detect{|other| transition.name && transition.name == other.name }
+        raise "[Stator] another transition already exists with the name of #{transition.name.inspect} in the #{@class_name} class"
       end
     end
 
     def generate_methods
-      states.each do |state|
+      self.states.each do |state|
+        method_name = [@namespace, state].compact.join('_')
         klass.class_eval <<-EV, __FILE__, __LINE__ + 1
-          def #{attr_name(state)}?
-            _stator_integration(:#{namespace}).state.to_sym == :#{state}
+          def #{method_name}?
+            integration = self._stator(#{@namespace.inspect}).integration(self)
+            integration.state == #{state.to_s.inspect}
           end
 
-          def #{attr_name(state)}_state_by?(time)
-            _stator_integration(:#{namespace}).state_by?(:#{state}.to_sym, time)
+          def #{method_name}_state_by?(time)
+            integration = self._stator(#{@namespace.inspect}).integration(self)
+            integration.state_by?(#{state.to_s.inspect}, time)
           end
         EV
       end
     end
+
+
   end
 end
