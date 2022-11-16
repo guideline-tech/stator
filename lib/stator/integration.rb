@@ -25,9 +25,9 @@ module Stator
 
     def state_was(use_previous = false)
       if use_previous
-        @record.previous_changes[@machine.field.to_s].try(:[], 0)
+        @record.attribute_before_last_save(@machine.field)
       else
-        @record.send("#{@machine.field}_was")
+        @record.attribute_in_database(@machine.field)
       end
     end
 
@@ -41,9 +41,9 @@ module Stator
 
     def state_changed?(use_previous = false)
       if use_previous
-        !!@record.previous_changes[@machine.field.to_s]
+        @record.saved_change_to_attribute?(@machine.field)
       else
-        @record.send("#{@machine.field}_changed?")
+        @record.will_save_change_to_attribute?(@machine.field)
       end
     end
 
@@ -158,7 +158,7 @@ module Stator
       return unless @record.respond_to?(field_name)
       return unless @record.respond_to?("#{field_name}=")
       return unless @record.send(field_name.to_s).nil? || state_changed?
-      return if @record.send("#{field_name}_changed?")
+      return if @record.will_save_change_to_attribute?(field_name)
 
       @record.send("#{field_name}=", (Time.zone || Time).now)
     end
