@@ -3,6 +3,7 @@
 require "spec_helper"
 
 describe Stator::Model do
+
   it "should set the default state after initialization" do
     u = User.new
     u.state.should eql("pending")
@@ -253,6 +254,75 @@ describe Stator::Model do
     end
   end
 
+  it "should validate state transitions using the db state after a transaction rollback" do
+    is_active_record_6_or_higher = Gem::Requirement.new(">= 6.0").satisfied_by?(ActiveRecord.version)
+
+    u = User.create!(email: 'doug@example.com')
+    u.state.should eql('pending')
+
+    lambda {
+      ActiveRecord::Base.transaction do
+        # The state change will be applied to the model object in memory.
+        # An UPDATE query will be sent to the db, but it will be rolled back
+        # when the error is raised below.
+        u.activate!
+        raise "Some error"
+      end
+    }.should raise_error("Some error")
+
+    u.state.should eql("activated")
+
+    # Rails 6.0 fixed a bug where a model's dirty state would be incorrect
+    # in a scenario like this one, where a model is updated within a transaction,
+    # and the transaction is then rolled back:
+    #
+    # https://github.com/rails/rails/pull/35987
+    #
+    # We show this dirty behavior change in Rails 6.0 below to clarify why stator itself
+    # behaves differently starting in Rails 6.0.
+    if is_active_record_6_or_higher
+      # On Rails 6.0 or higher, attribute_in_database is "pending" — which is correct,
+      # because the db transaction was rolled back.
+      u.attribute_in_database("state").should eql("pending")
+
+      # Attempting a state change to "hyperactivated" fails, which is correct,
+      # because the previous state change to "activated" did not succeed.
+      lambda {
+        u.hyperactivate!
+      }.should raise_error(ActiveRecord::RecordInvalid, 'Validation failed: State cannot transition to "hyperactivated" from "pending"')
+    else
+      # On Rails < 6.0, attribute_in_database is "activated" — which is incorrect,
+      # because the db transaction was rolled back.
+      u.attribute_in_database("state").should eql("activated")
+
+      # On Rails < 6.0, stator incorrectly allows the state change to "hyperactivated"
+      # because it incorrectly thinks the state has been successfully updated to "activated".
+      lambda {
+        u.hyperactivate!
+      }.should_not raise_error
+    end
+  end
+
+  it "should not support multiple state changes made between saves" do
+    u = User.create!(email: "doug@example.com")
+    u.state.should eql("pending")
+
+    u.activate(false) # change state, but do not save to db
+    u.state.should eql("activated")
+
+    lambda {
+      # Fails because the db state is still "pending", and
+      # the db state is what stator uses for the "previous" state
+      # to check that the state transition is valid.
+      u.hyperactivate!
+    }.should raise_error(ActiveRecord::RecordInvalid, 'Validation failed: State cannot transition to "hyperactivated" from "pending"')
+
+    # The model is updated in-memory with the new state value,
+    # but remains invalid.
+    u.state.should eql("hyperactivated")
+    u.valid?.should be false
+  end
+
   describe "tracker methods" do
     before do
       Time.zone = "Eastern Time (US & Canada)"
@@ -451,4 +521,5 @@ describe Stator::Model do
       states.should eql(%w[pending activated deactivated semiactivated hyperactivated])
     end
   end
+
 end
