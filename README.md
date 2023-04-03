@@ -108,7 +108,6 @@ u.can_activate?
 
 Note that asking if a transition can take place via `can_[transition_name]?` does not invoke validations. It simply determines whether the record is in a state which the transition can take place from.
 
-
 The `track: true` option enables timekeeping of the state transition. It will try to set a field in the format of "state_field_at" before saving the record. For example, in the previous state machine the following would occur:
 
 ```ruby
@@ -139,7 +138,6 @@ class User < ActiveRecord::Base
   end
 end
 ```
-
 
 If you need to access the state machine directly, you can do so via the class:
 
@@ -210,5 +208,5 @@ The `opposite` method also accepts the scope and constant options, but does not 
 
 #### TODO
 
-* Allow for multiple variations of a transition (shift_down style - :third_gear => :second_gear, :second_gear => :first_gear)
-* Create adapters for different backends (not just ActiveRecord)
+- Allow for multiple variations of a transition (shift_down style - :third_gear => :second_gear, :second_gear => :first_gear)
+- Create adapters for different backends (not just ActiveRecord)
