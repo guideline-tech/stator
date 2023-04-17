@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'activerecord', '~> 5.2.8'
+gem 'activerecord', '~> 7.0.4'
 
 gemspec
 
