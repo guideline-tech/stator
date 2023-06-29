@@ -2,10 +2,10 @@
 
 source "https://rubygems.org"
 
-gem "activerecord", "~> 5.2.0"
-gem "appraisal"
+gem "appraisal", github: "thoughtbot/appraisal", ref: "b200e636903"
 gem "activerecord-nulldb-adapter"
 gem "rake"
 gem "rspec"
+gem "activerecord", "~> 5.2.0"
 
 gemspec path: "../"
