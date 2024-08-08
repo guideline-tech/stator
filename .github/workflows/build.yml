@@ -10,11 +10,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ruby-version: [2.7.8]
+        ruby-version: [3.0]
         experimental: [false]
         include:
-          - ruby-version: 3.0
-            experimental: true
           - ruby-version: 3.1
             experimental: true
           - ruby-version: 3.2
