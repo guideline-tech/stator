@@ -6,6 +6,6 @@ gem "appraisal"
 gem "activerecord-nulldb-adapter"
 gem "rake"
 gem "rspec"
-gem "activerecord", "~> 6.1.0"
+gem "activerecord", "~> 7.1.0"
 
 gemspec path: "../"
