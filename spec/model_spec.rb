@@ -396,6 +396,35 @@ describe Stator::Model do
       u.semiactivated_state_at.should eql(t)
     end
 
+    it "should not respect an explicitly provided nil value for a timestamp field in create" do
+      u = User.create!(
+        email: "doug@example.com",
+        state: "semiactivated",
+        semiactivated_state_at: nil
+      )
+
+      u.state.should eql("semiactivated")
+      u.semiactivated_state_at.should_not be_nil
+    end
+
+    it "should not allow an explicitly provided nil value for a timestamp field to override a state transition" do
+      u = User.create!(
+        email: "doug@example.com",
+        state: "semiactivated",
+      )
+
+      u.state.should eql("semiactivated")
+
+      u.activated_state_at = Time.now
+      u.save!
+
+      u.assign_attributes(activated_state_at: nil)
+      u.activate!
+
+      u.state.should eql("activated")
+      u.activated_state_at.should_not be_nil
+    end
+
     it "should allow opting into track by namespace" do
       z = ZooKeeper.new(name: "Doug")
       z.employment_state.should eql("hired")

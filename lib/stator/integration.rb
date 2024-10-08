@@ -158,7 +158,7 @@ module Stator
       return unless @record.respond_to?(field_name)
       return unless @record.respond_to?("#{field_name}=")
       return unless @record.send(field_name.to_s).nil? || state_changed?
-      return if @record.will_save_change_to_attribute?(field_name)
+      return if @record.will_save_change_to_attribute?(field_name) && !@record.send(field_name.to_s).nil?
 
       @record.send("#{field_name}=", (Time.zone || Time).now)
     end
