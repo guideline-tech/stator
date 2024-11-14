@@ -11,7 +11,6 @@ require 'active_support/core_ext'
 require 'stator'
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
   config.expect_with(:rspec) { |c| c.syntax = :should }
   config.run_all_when_everything_filtered = true
   config.filter_run :focus
