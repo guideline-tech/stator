@@ -2,7 +2,7 @@ PATH
   remote: ..
   specs:
     stator (0.6.0)
-      activerecord (>= 5.1)
+      activerecord (>= 6.0)
 
 GEM
   remote: https://rubygems.org/
@@ -58,4 +58,4 @@ DEPENDENCIES
   stator!
 
 BUNDLED WITH
-   2.5.22
+   2.5.23

@@ -17,6 +17,8 @@ jobs:
             experimental: true
           - ruby-version: 3.2
             experimental: true
+          - ruby-version: 3.3
+            experimental: true                  
     steps:
       - uses: actions/checkout@v4
         with:
