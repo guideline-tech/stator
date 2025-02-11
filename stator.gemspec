@@ -18,4 +18,6 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency 'activerecord', ">= 6.0"
+
+  gem.required_ruby_version = ">= 3.2.0"
 end
