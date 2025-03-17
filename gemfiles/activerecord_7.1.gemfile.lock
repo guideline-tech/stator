@@ -42,7 +42,7 @@ GEM
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     logger (1.6.6)
-    minitest (5.25.4)
+    minitest (5.25.5)
     mutex_m (0.3.0)
     rake (13.2.1)
     rspec (3.13.0)
@@ -91,7 +91,7 @@ CHECKSUMS
   drb (2.2.1) sha256=e9d472bf785f558b96b25358bae115646da0dbfd45107ad858b0bc0d935cb340
   i18n (1.14.7) sha256=ceba573f8138ff2c0915427f1fc5bdf4aa3ab8ae88c8ce255eb3ecf0a11a5d0f
   logger (1.6.6) sha256=dd618d24e637715472732e7eed02e33cfbdf56deaad225edd0f1f89d38024017
-  minitest (5.25.4) sha256=9cf2cae25ac4dfc90c988ebc3b917f53c054978b673273da1bd20bcb0778f947
+  minitest (5.25.5) sha256=391b6c6cb43a4802bfb7c93af1ebe2ac66a210293f4a3fb7db36f2fc7dc2c756
   mutex_m (0.3.0) sha256=cfcb04ac16b69c4813777022fdceda24e9f798e48092a2b817eb4c0a782b0751
   rake (13.2.1) sha256=46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d
   rspec (3.13.0) sha256=d490914ac1d5a5a64a0e1400c1d54ddd2a501324d703b8cfe83f458337bab993
@@ -106,4 +106,4 @@ CHECKSUMS
   tzinfo (2.0.6) sha256=8daf828cc77bcf7d63b0e3bdb6caa47e2272dcfaf4fbfe46f8c3a9df087a829b
 
 BUNDLED WITH
-   2.6.5
+   2.6.6
