@@ -3,6 +3,7 @@ PATH
   specs:
     stator (0.7.0)
       activerecord (>= 6.0)
+      mutex_m
 
 GEM
   remote: https://rubygems.org/
@@ -42,6 +43,7 @@ GEM
       concurrent-ruby (~> 1.0)
     logger (1.7.0)
     minitest (5.25.5)
+    mutex_m (0.3.0)
     rake (13.2.1)
     rspec (3.13.0)
       rspec-core (~> 3.13.0)
@@ -90,6 +92,7 @@ CHECKSUMS
   i18n (1.14.7) sha256=ceba573f8138ff2c0915427f1fc5bdf4aa3ab8ae88c8ce255eb3ecf0a11a5d0f
   logger (1.7.0) sha256=196edec7cc44b66cfb40f9755ce11b392f21f7967696af15d274dde7edff0203
   minitest (5.25.5) sha256=391b6c6cb43a4802bfb7c93af1ebe2ac66a210293f4a3fb7db36f2fc7dc2c756
+  mutex_m (0.3.0) sha256=cfcb04ac16b69c4813777022fdceda24e9f798e48092a2b817eb4c0a782b0751
   rake (13.2.1) sha256=46cb38dae65d7d74b6020a4ac9d48afed8eb8149c040eccf0523bec91907059d
   rspec (3.13.0) sha256=d490914ac1d5a5a64a0e1400c1d54ddd2a501324d703b8cfe83f458337bab993
   rspec-core (3.13.3) sha256=25136507f4f9cf2e8977a2851e64e438b4331646054e345998714108745cdfe4

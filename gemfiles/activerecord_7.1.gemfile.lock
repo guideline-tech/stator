@@ -3,6 +3,7 @@ PATH
   specs:
     stator (0.7.0)
       activerecord (>= 6.0)
+      mutex_m
 
 GEM
   remote: https://rubygems.org/
