@@ -3,6 +3,8 @@ PATH
   specs:
     stator (0.7.0)
       activerecord (>= 6.0)
+      base64
+      benchmark
       bigdecimal
       logger
       mutex_m
