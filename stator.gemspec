@@ -13,10 +13,13 @@ Gem::Specification.new do |gem|
   gem.homepage      = "https://github.com/guideline-tech/stator"
   gem.license       = "MIT"
 
-  gem.files         = `git ls-files`.split($/)
+  # Specify which files should be added to the gem when it is released.
+  gem.files = Dir["lib/**/*"] + Dir["*.gemspec"]
+
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
+
+  gem.metadata["allowed_push_host"] = "https://rubygems.org"
 
   gem.add_dependency 'base64'
   gem.add_dependency 'benchmark'
