@@ -10,7 +10,8 @@ Gem::Specification.new do |gem|
   gem.email         = ["mike@mikeonrails.com"]
   gem.description   = %q{The simplest of ActiveRecord state machines. Intended to be lightweight and minimalistic.}
   gem.summary       = %q{The simplest of ActiveRecord state machines}
-  gem.homepage      = "https://www.github.com/mnelson/stator"
+  gem.homepage      = "https://github.com/guideline-tech/stator"
+  gem.license       = "MIT"
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
