@@ -13,11 +13,8 @@ Gem::Specification.new do |gem|
   gem.homepage      = "https://github.com/guideline-tech/stator"
   gem.license       = "MIT"
 
-  included_paths = [
-    'lib/',
-    'stator.gemspec',
-  ]
-  gem.files         = `git ls-files`.split($/).select { |f| included_paths.any? { |path| f.start_with?(path) } }
+  # Specify which files should be added to the gem when it is released.
+  gem.files = Dir["lib/**/*"] + Dir["*.gemspec"]
 
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
