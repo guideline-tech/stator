@@ -20,6 +20,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.metadata["allowed_push_host"] = "https://rubygems.org"
+  gem.metadata["rubygems_mfa_required"] = "true"
 
   gem.add_dependency 'base64'
   gem.add_dependency 'benchmark'
