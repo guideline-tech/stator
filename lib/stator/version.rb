@@ -3,7 +3,7 @@
 module Stator
 
   MAJOR       = 0
-  MINOR       = 7
+  MINOR       = 9
   PATCH       = 0
   PRERELEASE  = nil
 

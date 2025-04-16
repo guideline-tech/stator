@@ -505,8 +505,16 @@ describe Stator::Model do
       User::ACTIVE_STATES.should eql(%w[activated hyperactivated])
       User::INACTIVE_STATES.should eql(%w[pending deactivated semiactivated])
 
-      User.active.to_sql.gsub("  ", " ").should eq("SELECT users.* FROM users WHERE users.state IN ('activated', 'hyperactivated')")
-      User.inactive.to_sql.gsub("  ", " ").should eq("SELECT users.* FROM users WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
+      is_active_record_72_or_higher = Gem::Requirement.new(">= 7.2").satisfied_by?(ActiveRecord.version)
+
+      if (is_active_record_72_or_higher)
+        User.active.to_sql.gsub("  ", " ").should eq("SELECT 'users'.* FROM 'users' WHERE 'users'.'state' IN ('activated', 'hyperactivated')")
+        User.inactive.to_sql.gsub("  ", " ").should eq("SELECT 'users'.* FROM 'users' WHERE 'users'.'state' IN ('pending', 'deactivated', 'semiactivated')")
+      else
+        User.active.to_sql.gsub("  ", " ").should eq("SELECT users.* FROM users WHERE users.state IN ('activated', 'hyperactivated')")
+        User.inactive.to_sql.gsub("  ", " ").should eq("SELECT users.* FROM users WHERE users.state IN ('pending', 'deactivated', 'semiactivated')")
+      end
+
     end
 
     it "should evaluate inverses correctly" do
