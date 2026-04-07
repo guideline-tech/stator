@@ -29,5 +29,5 @@ Gem::Specification.new do |gem|
   gem.add_dependency 'mutex_m'
   gem.add_dependency 'activerecord', ">= 6.0"
 
-  gem.required_ruby_version = ">= 3.2.0"
+  gem.required_ruby_version = ">= 3.3.0"
 end
