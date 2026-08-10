@@ -1,5 +1,5 @@
 PATH
-  remote: ..
+  remote: .
   specs:
     stator (0.11.1)
       activerecord (>= 8.0)
@@ -79,7 +79,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activerecord (~> 8.1.0)
   activerecord-nulldb-adapter
   appraisal
   rake
