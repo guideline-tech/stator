@@ -20,5 +20,8 @@ updates:
     versioning-strategy: increase
     open-pull-requests-limit: 20
     insecure-external-code-execution: deny
+    ignore:
+      - dependency-name: "json"
+        update-types: ["version-update:semver-major"]
     commit-message:
       prefix: "[bundler] "      
