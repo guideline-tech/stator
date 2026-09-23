@@ -206,6 +206,16 @@ end
 
 The `opposite` method also accepts the scope and constant options, but does not yield to a block since the state definitions are inheritenly tied to the ones described in the parent state_alias block.
 
+A `state_alias` without a block is shorthand for an alias of the state it is named after. It is useful for getting a scope and constant for a single state:
+
+```ruby
+# same as `state_alias :activated, scope: true, constant: true do is :activated end`
+# will generate a User::ACTIVATED_STATES constant and User.activated scope
+state_alias :activated, scope: true, constant: true
+```
+
+A `state_alias` without a block whose name is not a state raises, since there are no states to infer.
+
 ## Development
 
 Run test suite against current Rails version:

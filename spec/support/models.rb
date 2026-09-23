@@ -53,6 +53,8 @@ class User < ActiveRecord::Base
       opposite :iced_tea
     end
 
+    state_alias :deactivated, :constant => true, :scope => true
+
   end
 
   validate :email_is_right_length
