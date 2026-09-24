@@ -27,6 +27,7 @@ module Stator
     end
 
     def evaluate
+      infer_states if @states.empty?
       generate_methods
 
       if @opposite
@@ -38,6 +39,14 @@ module Stator
     end
 
     protected
+
+    def infer_states
+      unless @machine.states.include?(@name.to_s)
+        raise "[Stator] state_alias #{@full_name.inspect} is not a state in the #{@machine.klass.name} class; declare its states with `is` or `is_not`"
+      end
+
+      @states = [@name.to_s]
+    end
 
     def inferred_constant_name
       [@full_name.upcase, @machine.field.to_s.pluralize.upcase].join('_')

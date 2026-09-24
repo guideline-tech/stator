@@ -553,6 +553,29 @@ describe Stator::Model do
       User.should_not respond_to(:iced_tea)
     end
 
+    it "should treat a bare alias named after a state as that state" do
+      User::DEACTIVATED_STATES.should eql(%w[deactivated])
+      User.deactivated.where_values_hash.should eql("state" => "deactivated")
+
+      u = User.new(email: "doug@example.com", state: "deactivated")
+      u.should be_deactivated
+    end
+
+    it "should reject a bare alias that is not named after a state" do
+      stub_const("Bare", Class.new(ActiveRecord::Base) { self.table_name = "users"; extend Stator::Model })
+
+      lambda {
+        Bare.stator do
+          transition :activate do
+            from :pending
+            to :activated
+          end
+
+          state_alias :active
+        end
+      }.should raise_error(RuntimeError, /state_alias "active" is not a state in the Bare class/)
+    end
+
     it "should determine the full list of states correctly" do
       states = User._stator("").states
       states.should eql(%w[pending activated deactivated semiactivated hyperactivated])
