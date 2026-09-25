@@ -7,8 +7,8 @@ require "stator/version"
 Gem::Specification.new do |spec|
   spec.name          = "stator"
   spec.version       = Stator::VERSION
-  spec.authors       = ["Mike Nelson"]
-  spec.email         = ["mike@mikeonrails.com"]
+  spec.authors       = ["Gusto"]
+  spec.email         = ["gusto-opensource-buildkite@gusto.com"]
   spec.description   = "The simplest of ActiveRecord state machines. Intended to be lightweight and minimalistic."
   spec.summary       = "The simplest of ActiveRecord state machines"
   spec.license       = "MIT"
