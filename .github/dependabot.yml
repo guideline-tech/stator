@@ -20,8 +20,21 @@ updates:
     versioning-strategy: increase
     open-pull-requests-limit: 20
     insecure-external-code-execution: deny
+    commit-message:
+      prefix: "[bundler] "   
     ignore:
       - dependency-name: "json"
         update-types: ["version-update:semver-major"]
-    commit-message:
-      prefix: "[bundler] "      
+    groups:
+      monthly:
+        patterns:
+          - "*" 
+        exclude-patterns:
+          - "rails"
+          - "active*"
+          - "action*"
+      rails:
+        patterns:
+          - "rails"
+          - "active*"
+          - "action*"
