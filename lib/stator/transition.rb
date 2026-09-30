@@ -117,6 +117,20 @@ module Stator
           transition  = machine.transitions.detect{|t| t.full_name.to_s == #{@full_name.inspect}.to_s }
           transition.can?(integration.state)
         end
+
+        def ensure_#{@full_name}(should_save = true)
+          integration = _integration(#{@namespace.to_s.inspect})
+          return true if integration.state == #{@to.inspect}
+
+          #{@full_name}(should_save)
+        end
+
+        def ensure_#{@full_name}!
+          integration = _integration(#{@namespace.to_s.inspect})
+          return true if integration.state == #{@to.inspect}
+
+          #{@full_name}!
+        end
       EV
     end
 
