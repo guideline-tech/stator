@@ -77,6 +77,54 @@ describe Stator::Model do
     }.should raise_error(/cannot transition to \"hyperactivated\" from \"hyperactivated\"/)
   end
 
+  it "should allow ensure_ transition when already in the target state" do
+    u = User.new(email: "fred@example.com")
+    u.activate!
+    u.hyperactivate!
+
+    lambda {
+      u.ensure_hyperactivate!
+    }.should_not raise_error
+
+    u.state.should eql("hyperactivated")
+  end
+
+  it "should allow ensure_ transition to perform a normal transition when not in the target state" do
+    u = User.new(email: "fred@example.com")
+    u.activate!
+
+    u.ensure_hyperactivate!
+
+    u.state.should eql("hyperactivated")
+  end
+
+  it "should return true from ensure_ methods when already in the target state" do
+    u = User.new(email: "fred@example.com")
+    u.activate!
+    u.hyperactivate!
+
+    u.ensure_hyperactivate!.should eql(true)
+    u.ensure_hyperactivate.should eql(true)
+  end
+
+  it "should allow ensure_ without bang to skip save" do
+    u = User.new(email: "fred@example.com")
+    u.activate!
+
+    u.ensure_hyperactivate(false)
+
+    u.state.should eql("hyperactivated")
+    u.state_in_database.should eql("activated")
+  end
+
+  it "should raise error from ensure_ bang method when transition is invalid" do
+    u = User.new(email: "fred@example.com")
+
+    lambda {
+      u.ensure_hyperactivate!
+    }.should raise_error(ActiveRecord::RecordInvalid)
+  end
+
   it "should run conditional validations" do
     u = User.new
     u.state = "semiactivated"
